@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "O91EspZlEuvY_gPU17U6o"
+uri = "file://wlan_simulation/wlan_simulation_output.png"
+type = "image"
+title = "WLAN Simulation — Grid Map with Heatmap"
+
+[[outputs]]
+id = "iRHbB_Zla-AsQolnRswPw"
+uri = "file://wlan_simulation/density_bar_output.png"
+type = "image"
+title = "Per-AP User Count (Density Bar Chart)"

@@ -1,0 +1,146 @@
+Build a Python-based simulation project called:
+
+“Graph-Based WLAN Planning and Crowd Density Estimation System”
+
+The project should simulate how Wi-Fi Access Points (APs) are placed optimally using graph theory and how Wi-Fi signals can estimate crowd density and help optimize bandwidth allocation.
+
+-----------------------------------
+CORE REQUIREMENTS
+-----------------------------------
+
+1. ENVIRONMENT MODEL
+- Create a 2D grid (e.g., 20x20)
+- Each grid cell represents a location (node)
+- Use NetworkX to model this as a graph
+- Nodes should store coordinates (x, y)
+
+2. GRAPH CONNECTIVITY
+- Connect nodes based on a signal radius (Euclidean distance)
+- This represents possible Wi-Fi coverage
+
+3. ACCESS POINT PLACEMENT
+- Implement a Greedy Minimum Dominating Set (MDS) algorithm
+- Select minimum nodes to act as Access Points
+- Output selected AP locations
+
+4. USER SIMULATION
+- Randomly distribute users across the grid
+- Each user is assigned to the nearest AP
+
+5. SIGNAL MODEL
+- Simulate signal strength (RSSI) using distance:
+  RSSI = -10 * log10(distance + 1)
+
+6. CROWD DENSITY ESTIMATION (NO AI)
+- Estimate density using:
+  density = number of users per AP
+- Optionally factor in RSSI variation
+
+7. BANDWIDTH OPTIMIZATION
+- Each AP has limited bandwidth
+- If too many users connect:
+  - Reduce bandwidth per user
+  - OR flag congestion
+- Simulate load balancing (optional)
+
+8. VISUALIZATION
+- Plot:
+  - Grid
+  - AP locations (different color)
+  - Users
+  - Coverage radius circles
+- Show density as color intensity (heatmap)
+
+-----------------------------------
+PROJECT STRUCTURE
+-----------------------------------
+
+Create the following files:
+
+1. main.py
+- Entry point
+- Runs full simulation pipeline
+
+2. graph_model.py
+- Create grid graph
+- Add edges based on radius
+
+3. ap_placement.py
+- Implement greedy MDS algorithm
+
+4. user_simulation.py
+- Generate users
+- Assign users to APs
+
+5. signal_model.py
+- Calculate RSSI based on distance
+
+6. density_estimator.py
+- Compute density per AP
+
+7. bandwidth_optimizer.py
+- Simulate bandwidth allocation
+
+8. visualization.py
+- Plot graph, APs, users, heatmap
+
+9. config.py
+- Store parameters (grid size, radius, number of users)
+
+-----------------------------------
+DOCUMENTATION PAGE
+-----------------------------------
+
+Create a file called:
+
+README.md
+
+It must include:
+
+1. PROJECT OVERVIEW
+Explain:
+- What the system does
+- Why it is useful (Wi-Fi optimization, ISP usage, crowd estimation)
+
+2. HOW IT WORKS (STEP-BY-STEP)
+- Environment creation
+- Graph modeling
+- AP placement
+- User simulation
+- Density estimation
+- Bandwidth optimization
+
+3. FILE-BY-FILE EXPLANATION
+Explain what each file does clearly:
+- main.py → orchestrates everything
+- graph_model.py → builds the network graph
+- etc.
+
+4. HOW TO RUN
+- Install dependencies:
+  pip install networkx matplotlib numpy
+- Run:
+  python main.py
+
+5. OUTPUT EXPLANATION
+- What the visualization shows
+- How to interpret results
+
+6. REAL-WORLD APPLICATION
+- ISPs optimizing bandwidth
+- Crowd monitoring in campuses, malls, events
+
+-----------------------------------
+EXTRA FEATURES (IF POSSIBLE)
+-----------------------------------
+- Allow changing parameters easily in config.py
+- Add comments in code for clarity
+- Keep code modular and clean
+- Use functions (not one big script)
+
+-----------------------------------
+IMPORTANT
+-----------------------------------
+- Do NOT use machine learning or AI
+- Use only deterministic logic and graph algorithms
+- Keep it beginner-friendly but well-structured
