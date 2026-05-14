@@ -104,6 +104,8 @@ export default function SimCanvas({ results, config, highlightedAp, onApHover }:
       const r = config.signalRadius * cell;
       const isCongested = results.congestion.get(apKey);
 
+      if (r <= 0) continue;
+
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fillStyle = isHighlighted
