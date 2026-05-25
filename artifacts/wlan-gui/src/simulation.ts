@@ -7,6 +7,7 @@ export interface SimConfig {
   congestionThreshold: number;
   minBandwidthPerUser: number;
   randomSeed: number;
+  numFloors: number;
 }
 
 export interface SimResults {
@@ -21,6 +22,15 @@ export interface SimResults {
   congestion: Map<string, boolean>;
   loadSuggestions: string[];
   edgeCount: number;
+  numFloors: number;
+  apNodes3D: [number, number, number][];
+  users3D: [number, number, number][];
+  userCounts3D: Map<string, number>;
+  avgRssi3D: Map<string, number | null>;
+  densityClass3D: Map<string, "LOW" | "MEDIUM" | "HIGH">;
+  allocation3D: Map<string, number | null>;
+  congestion3D: Map<string, boolean>;
+  loadSuggestions3D: string[];
 }
 
 export const DEFAULT_CONFIG: SimConfig = {
@@ -32,6 +42,7 @@ export const DEFAULT_CONFIG: SimConfig = {
   congestionThreshold: 0.80,
   minBandwidthPerUser: 1.0,
   randomSeed: 42,
+  numFloors: 1,
 };
 
 function dist(a: [number, number], b: [number, number]): number {
@@ -98,11 +109,21 @@ function greedyMDS(
   return domSet;
 }
 
+function dist3D(a: [number, number, number], b: [number, number, number]): number {
+  const FLOOR_HEIGHT_M = 3.5;
+  const dx = a[0] - b[0], dy = a[1] - b[1], dz = (a[2] - b[2]) * FLOOR_HEIGHT_M;
+  return Math.sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+function nodeKey3D(n: [number, number, number]): string {
+  return `${n[0]},${n[1]},${n[2]}`;
+}
+
 export function runSimulation(config: SimConfig): SimResults {
   const {
     gridWidth, gridHeight, signalRadius,
     numUsers, apBandwidthMbps, congestionThreshold,
-    minBandwidthPerUser, randomSeed,
+    minBandwidthPerUser, randomSeed, numFloors,
   } = config;
 
   // Count edges
@@ -204,10 +225,110 @@ export function runSimulation(config: SimConfig): SimResults {
     }
   }
 
+  // ── 3D Extension ──────────────────────────────────────────────
+  const floors = Array.from({ length: numFloors }, (_, i) => i);
+
+  // APs per floor (run MDS independently on each floor)
+  const apNodes3D: [number, number, number][] = [];
+  for (const floor of floors) {
+    const floorAps = greedyMDS(gridWidth, gridHeight, signalRadius);
+    for (const ap of floorAps) apNodes3D.push([ap[0], ap[1], floor]);
+  }
+
+  // Users with floor assignment
+  const rand3D = seededRandom(randomSeed + 1);
+  const users3D: [number, number, number][] = Array.from({ length: numUsers }, () => [
+    Math.floor(rand3D() * gridWidth),
+    Math.floor(rand3D() * gridHeight),
+    Math.floor(rand3D() * numFloors),
+  ]);
+
+  // Assign each user to nearest AP (across all floors, 3D distance)
+  const assignment3D = new Map<string, [number, number, number][]>();
+  for (const ap of apNodes3D) assignment3D.set(nodeKey3D(ap), []);
+
+  for (const user of users3D) {
+    if (apNodes3D.length === 0) continue;
+    let nearestAp = apNodes3D[0];
+    let nearestD = Infinity;
+    for (const ap of apNodes3D) {
+      const d = dist3D(user, ap);
+      if (d < nearestD) { nearestD = d; nearestAp = ap; }
+    }
+    assignment3D.get(nodeKey3D(nearestAp))!.push(user);
+  }
+
+  // 3D user counts
+  const userCounts3D = new Map<string, number>();
+  for (const [k, v] of assignment3D) userCounts3D.set(k, v.length);
+
+  // 3D RSSI (15 dB floor penetration penalty per floor difference)
+  const FLOOR_PENALTY_DB = 15;
+  const avgRssi3D = new Map<string, number | null>();
+  for (const [apk, userList] of assignment3D) {
+    const parts = apk.split(",").map(Number);
+    const ap3: [number, number, number] = [parts[0], parts[1], parts[2]];
+    const vals = userList.map(u => {
+      const d = dist3D(u, ap3);
+      const floorDiff = Math.abs(u[2] - ap3[2]);
+      return -10 * Math.log10(d + 1) - floorDiff * FLOOR_PENALTY_DB;
+    });
+    avgRssi3D.set(apk, vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null);
+  }
+
+  // 3D density classification
+  const counts3D = [...userCounts3D.values()];
+  const mean3D = counts3D.reduce((a, b) => a + b, 0) / (counts3D.length || 1);
+  const densityClass3D = new Map<string, "LOW" | "MEDIUM" | "HIGH">();
+  for (const [apk, count] of userCounts3D) {
+    if (count < 0.5 * mean3D) densityClass3D.set(apk, "LOW");
+    else if (count < 1.5 * mean3D) densityClass3D.set(apk, "MEDIUM");
+    else densityClass3D.set(apk, "HIGH");
+  }
+
+  // 3D bandwidth allocation
+  const allocation3D = new Map<string, number | null>();
+  for (const [apk, count] of userCounts3D)
+    allocation3D.set(apk, count > 0 ? apBandwidthMbps / count : null);
+
+  // 3D congestion
+  const capacityUsers3D = (apBandwidthMbps * congestionThreshold) / minBandwidthPerUser;
+  const congestion3D = new Map<string, boolean>();
+  for (const [apk, count] of userCounts3D) {
+    if (count === 0) { congestion3D.set(apk, false); continue; }
+    congestion3D.set(apk, apBandwidthMbps / count < minBandwidthPerUser || count > capacityUsers3D);
+  }
+
+  // 3D load balancing suggestions
+  const avg3D = counts3D.reduce((a, b) => a + b, 0) / (counts3D.length || 1);
+  const overloaded3D = apNodes3D.filter(ap => (userCounts3D.get(nodeKey3D(ap)) ?? 0) > avg3D * 1.2);
+  const underloaded3D = apNodes3D.filter(ap => (userCounts3D.get(nodeKey3D(ap)) ?? 0) < avg3D * 0.8);
+  let loadSuggestions3D: string[] = [];
+  if (overloaded3D.length === 0) {
+    loadSuggestions3D = ["3D load is well balanced — no migration needed."];
+  } else if (underloaded3D.length === 0) {
+    loadSuggestions3D = ["All APs across all floors are heavily loaded — consider adding more APs."];
+  } else {
+    for (const over of overloaded3D) {
+      const nearest = underloaded3D.reduce((a, b) =>
+        dist3D(over, a) < dist3D(over, b) ? a : b
+      );
+      const excess = Math.round((userCounts3D.get(nodeKey3D(over)) ?? 0) - avg3D);
+      loadSuggestions3D.push(
+        `AP (${over[0]},${over[1]}) Floor ${over[2] + 1}: move ~${excess} users → ` +
+        `AP (${nearest[0]},${nearest[1]}) Floor ${nearest[2] + 1}`
+      );
+    }
+  }
+
   return {
     apNodes, users, assignment, userCounts,
     rssiMap, avgRssi, densityClass,
     allocation, congestion, loadSuggestions,
     edgeCount,
+    numFloors,
+    apNodes3D, users3D,
+    userCounts3D, avgRssi3D, densityClass3D,
+    allocation3D, congestion3D, loadSuggestions3D,
   };
 }

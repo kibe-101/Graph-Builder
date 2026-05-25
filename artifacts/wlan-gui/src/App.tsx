@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import SimCanvas from "./SimCanvas";
+import SimCanvas3D from "./SimCanvas3D";
 import { runSimulation, SimConfig, SimResults, DEFAULT_CONFIG } from "./simulation";
 
 function nodeKey(n: [number, number]) { return `${n[0]},${n[1]}`; }
@@ -45,6 +46,7 @@ export default function App() {
   const [highlightedAp, setHighlightedAp] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"map" | "aps" | "tips">("map");
   const [isRunning, setIsRunning] = useState(false);
+  const [view, setView] = useState<"2d" | "3d">("2d");
 
   const runSim = useCallback(() => {
     setIsRunning(true);
@@ -89,13 +91,24 @@ export default function App() {
             <p className="text-[11px] text-slate-500">Graph-Based AP Placement &amp; Crowd Density</p>
           </div>
         </div>
-        <button
-          onClick={runSim}
-          disabled={isRunning}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500
-            disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold
-            transition-colors shadow-lg shadow-blue-900/30"
-        >
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-lg overflow-hidden border border-slate-700 text-xs font-semibold">
+            <button
+              onClick={() => setView("2d")}
+              className={`px-3 py-1.5 transition-colors ${view === "2d" ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}
+            >2D</button>
+            <button
+              onClick={() => setView("3d")}
+              className={`px-3 py-1.5 transition-colors ${view === "3d" ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}
+            >3D</button>
+          </div>
+          <button
+            onClick={runSim}
+            disabled={isRunning}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500
+              disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold
+              transition-colors shadow-lg shadow-blue-900/30"
+          >
           {isRunning ? (
             <>
               <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -111,7 +124,8 @@ export default function App() {
               Run Simulation
             </>
           )}
-        </button>
+          </button>
+        </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
@@ -128,6 +142,8 @@ export default function App() {
                 onChange={update("gridHeight")} />
               <Slider label="Signal Radius" value={config.signalRadius} min={1} max={8} step={0.5}
                 onChange={update("signalRadius")} unit=" units" />
+              <Slider label="Floors" value={config.numFloors} min={1} max={5} step={1}
+                onChange={update("numFloors")} />
             </div>
           </div>
 
@@ -203,14 +219,23 @@ export default function App() {
                 </div>
               ) : (
                 <>
-                  <SimCanvas
-                    results={results}
-                    config={config}
-                    highlightedAp={highlightedAp}
-                    onApHover={setHighlightedAp}
-                  />
-                  {/* Hover tooltip */}
-                  {highlightedAp && (
+                  {view === "2d" ? (
+                    <SimCanvas
+                      results={results}
+                      config={config}
+                      highlightedAp={highlightedAp}
+                      onApHover={setHighlightedAp}
+                    />
+                  ) : (
+                    <SimCanvas3D
+                      results={results}
+                      config={config}
+                      highlightedAp={highlightedAp}
+                      onApHover={setHighlightedAp}
+                    />
+                  )}
+                  {/* Hover tooltip — 2D only */}
+                  {view === "2d" && highlightedAp && (
                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700
                       rounded-lg px-4 py-2 text-xs shadow-xl pointer-events-none flex gap-4">
                       {(() => {
