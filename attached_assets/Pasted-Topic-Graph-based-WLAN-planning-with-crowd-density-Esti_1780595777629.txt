@@ -1,0 +1,77 @@
+Topic: Graph-based WLAN planning with crowd density Estimation 
+
+135206 Langat Tonny Kibet 
+
+Chapter 2: Literature Review 
+
+2.1 Introduction 
+
+This chapter reviews existing literature relevant to the design and implementation of a graph-theoretic WLAN planning system with crowd density estimation and network load balancing. The review is structured around four key areas: the fundamentals of WLAN architecture and operation, the application of graph theory to network planning, crowd density estimation techniques, and existing tools and systems developed for similar purposes.  
+
+2.2 Technological Review 
+
+This highlight of this sub-topic provides technical analysis of core technologies forming the foundation of the project. 
+
+2.2.1 Wireless LAN and Access Point Architecture 
+
+Wireless Local Area Networks (WLANs) operate under the IEEE 802.11 family of standards, commonly known as Wi-Fi. A WLAN consists of one or more Access Points (APs) that serve as bridges between wireless clients and a wired distribution network. Each AP broadcasts a signal across a defined coverage area, and clients associate with the AP that provides the strongest Received Signal Strength Indicator (RSSI). RSSI is typically modeled using the log-distance path-loss formula, which accounts for signal attenuation over distance and environmental obstructions. 
+
+ The placement of APs directly affects network performance. An insufficient number of APs results in coverage gaps, while an excessive number can cause co-channel interference. Determining the optimal number and position of APs is therefore a critical problem in WLAN planning. 
+
+  
+
+2.2.2 Graph Theory in Network Modeling 
+
+Graph theory provides a formal mathematical framework for modeling network topologies. A network environment can be represented as a graph G = (V, E), where vertices V correspond to physical locations and edges E represent connectivity or reachability between them. This representation enables the application of classical graph algorithms to network planning problems. 
+
+  
+
+One well-studied problem is the Minimum Dominating Set (MDS), which seeks the smallest subset of vertices such that every vertex in the graph is either in the subset or adjacent to a member of it. Applied to WLAN planning, finding an MDS corresponds to identifying the minimum number of AP locations that provide full coverage of the environment. Since MDS is NP-hard in the general case, greedy approximation algorithms are commonly used in practice, offering near-optimal solutions in polynomial time. 
+
+  
+
+2.2.3 K-Means Clustering for AP Placement 
+
+K-Means is an unsupervised machine learning algorithm that partitions a dataset into K clusters by iteratively assigning data points to the nearest centroid and recalculating centroids until convergence. In the context of WLAN planning, user positions can be treated as data points, and APs placed at cluster centroids ensure coverage is directed toward areas of high user density. This approach is particularly effective in environments where user distribution is non-uniform and known in advance or estimable from historical data. 
+
+  
+
+2.2.4 Crowd Density Estimation 
+
+Crowd density estimation in network environments is typically derived from the number of clients associated with each AP. Classification into Low, Medium, and High-density levels allows network administrators to anticipate congestion and allocate resources accordingly. Researchers have proposed density-aware resource management frameworks that dynamically adjust bandwidth allocation based on real-time client counts and signal quality metrics. Such frameworks form the basis of the density classification and load-balancing components implemented in this project. 
+
+  
+
+2.2.5 Network Load Balancing 
+
+Load balancing in WLANs aims to distribute client connections evenly across available APs to prevent any single AP from becoming a bottleneck. Techniques include RSSI-based handoff, where clients are migrated to less loaded APs with acceptable signal strength, and bandwidth-threshold-based triggering, where rebalancing is initiated when an AP's per-client bandwidth drops below a defined minimum. Automated load-balancing systems that generate rebalancing recommendations have been shown to improve overall network throughput and reduce packet loss in dense environments.  
+
+2.3 Existing Systems and Tools 
+
+Several tools and systems have been developed for WLAN planning and management, each with varying degrees of capability: 
+
+  
+
+Ekahau Site Survey  
+
+A professional WLAN planning tool that uses RF simulation modeling to optimise AP placement. While highly accurate, it is proprietary, expensive, and does not expose its placement algorithms for academic analysis (Ekahau, 2023). 
+
+  
+
+NetSpot 
+
+ A Wi-Fi analysis and survey tool that visualises signal coverage through heatmaps. It is primarily diagnostic rather than predictive, and does not support algorithmic placement optimisation (NetSpot, 2023). 
+
+ 
+
+OpenWIPS-ng  
+
+ An open-source wireless intrusion prevention system focused on detecting rogue devices and attacks on WLANs. It addresses security rather than coverage planning (Shand, 2011). 
+
+ 2.4 Gap in existing work 
+
+  
+
+2.5 Conceptual framework 
+
+ 
