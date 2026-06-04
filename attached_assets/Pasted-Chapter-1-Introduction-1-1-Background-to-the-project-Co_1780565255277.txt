@@ -1,0 +1,78 @@
+Chapter 1: Introduction
+1.1 Background to the project
+Conventional enterprise network management relies on per-device manual configuration through
+a Command Line Interface (CLI), an approach that is operationally complex and highly susceptible
+to human error at scale. Software-Defined Networking (SDN) addressed these limitations by
+decoupling the control plane from the data plane, centralising network intelligence into a dedicated
+software controller that programmes underlying forwarding devices through open interfaces such
+as OpenFlow (Hussain et al., 2022). This abstraction enables network behaviour to be defined and
+enforced through software rather than device-by-device hardware interaction.
+Intent-Based Networking (IBN) extends this standard by introducing a higher level of abstraction
+through which administrators declare an "intent”, which is a high-level operational objective and
+an intelligent controller that autonomously translates into the corresponding device-level
+configurations (Leivadeas & Falkner, 2023). Critically, IBN operates through a closed-loop
+mechanism encompassing intent expression, translation, activation and continuous assurance that
+enables the network to validate its live state against the declared intent and self-correct any
+deviation without human intervention (Pang et al., 2020). It is this principle of autonomous,
+continuously verified and policy-driven network management that underpins the controller
+architecture proposed in this project.
+1.2 Problem Statement
+Tier-1 enterprise organisations continue to face significant operational and security risks from
+Configuration Drift which is defined as the silent divergence of a network’s operational state from
+its authorised baseline. This commonly arises from emergency manual patches applied outside
+formal change control and unauthorised modifications by non-network personnel or unprecedented
+automation errors.
+The problem is twofold. First, existing configuration management solutions operate on pull-based
+or scheduled audit cycles meaning violations are only identified at discrete intervals which
+introduces windows of vulnerabilities during which misconfigured firewall rules, leaked routing
+entries or disabled access control entries may persist undetected before the next audit cycle. In
+1
+mission-critical financial environments where the nature of continuous transactions and regulatory
+compliance are mandatory, this reactive posture is insufficient (Leivadeas & Falkner, 2023).
+Second, current monitoring tools are mostly limited to detection and alerting leaving remediation
+entirely on human intervention. As highlighted by Pang et al. (2020), the absence of a closed-loop
+mechanism coupling real-time telemetry with autonomous corrective action represents a critical
+gap in network management.
+Without a controller capable of real-time auditing, intent verification and self-healing remediation,
+Tier-1 banking infrastructures remain reliant on manual processes that are too slow, inconsistent
+and inadequate for the demands of modern financial operations.
+1.3 Objectives of the Study
+1.3.1 General objectives
+The main objective is to develop an autonomous network controller that leverages intent-based
+networking to eliminate configuration in Tier-1 banking infrastructures. The controller aims to
+ensure continuous compliance through real-time auditing and automated self-healing remediation.
+i. 1.3.2 Specific objectives
+To evaluate the adoption of intent-based networking and closed-loop automation as a
+solution to avoid configuration drift in Tier-1 banking infrastructures.
+ii. To review existing configuration management frameworks for gaps in real-time continuous
+state validation and autonomous remediation capabilities.
+iii. To design and deploy an autonomous controller using GNS3, Zabbix and Python which
+can automatically detect and remediate unauthorised network configuration changes.
+iv. To evaluate the efficiency of the controller through its ability to automatically restore a
+simulated network to its desired baseline of operation without user intervention.
+1.4 Scope and Limitations
+The project focuses on developing an autonomous controller for Tier-1 banking infrastructure
+using GNS3, Cisco IOU, OVS and OPNsense to automate configuration audit and remediation via
+Zabbix and ONIE. This scope involves emulating a multi-tier network to manage both layer 2 and
+2
+layer 3 parameters such as VLANs and routing policies while utilising zero-touch provisioning to
+maintain a consistent operational baseline across all simulated switching nodes.
+However, the emulation fidelity of virtualised environments is a limitation of the project that may
+not fully reflect the hardware-specific performance of physical data centre switches. Autonomous
+remediation is also affected by latency from Zabbix polling intervals meaning detection is not
+immediate. The controller is also restricted to resolving logic-based configuration drift and cannot
+autonomously repair physical hardware failures or mitigate external ISP-level routing instabilities.
+1.5 Significance of Study
+This study holds significance across operational security and regulatory dimensions. In Tier-1
+banking environments where service continuity and transactional security are no negotiable,
+configuration drift poses a persistent risk. This study introduces a controller that can perform real-
+time auditing and autonomous remediation to directly address the gap between violation detection
+and resolution which is currently exposing critical infrastructure to outages and security incidents.
+From a security perspective, the controller is a continuous enforcement mechanism that guarantees
+network devices are always acting according to their authorised baseline reducing the attack
+surface introduced by unauthorised modifications. This is critical as misconfiguration continues to
+be one of the leading causes on enterprise security breaches.
+Regulatory compliance is equally served as financial institutions must satisfy frameworks such as
+PCI-DSS and SWIFT. An automated closed-loop audit and remediation system generates
+verifiable records that simplify compliance reporting and reduce the operational burden of manual
+evidence collection during regulatory reviews.
