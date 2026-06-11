@@ -1,0 +1,66 @@
+Chapter 3: Design Methodology
+3.1 Introduction
+This chapter describes the methodology adopted for the design and implementation of the proposed
+controller. It outlines the project methodology, presents the functional and non-functional
+requirements of the system and details the hardware and software needed to build and validate the
+proposed solution.
+3.2 Project Methodology
+This project involves conducting a literature review on Tier-1 core banking network architecture,
+Intent-Based Networking, configuration drift and existing configuration management solutions. A
+testbed will be created using ContainerLab to emulate a Tier-1 banking environment across which
+the autonomous controller will be implemented to provision, monitor, detect and remediate
+configuration drift (ContainerLab, 2024). Tests will then be conducted to validate the effectiveness
+of the controller in correcting configuration deviations without human intervention.
+3.3 Feature and Design Requirements
+This section presents the features that describe the operation of the testbed and the proposed
+autonomous controller.
+3.3.1 Functional Requirements
+A Tier-1 banking network topology will be created in ContainerLab using Docker containers to
+instantiate network operating system images across an isolated and reproducible environment
+(ContainerLab, 2024; Docker Inc., 2024). The topology will comprise core, distribution and access
+switching layers segmented using VLANs in accordance with IEEE 802.1Q standards (IEEE,
+2022). All devices will receive baseline configurations on first boot via ONIE to ensure a consistent
+and compliant starting state across all switching nodes (Open Compute Project, 2024). Zabbix will
+continuously collect device telemetry via SNMP and ICMP polling to feed the drift detection
+component of the controller (Zabbix SIA, 2024). The Python controller will retrieve running
+configurations from each device via SSH using Netmiko, compare them against stored baselines
+16
+and automatically push corrective configurations upon detecting drift (Byers, 2023; Python
+Software Foundation, 2024). All deviations and remediation actions will be timestamped and
+logged to support compliance verification under PCI-DSS v4.0 and ISO/IEC 27001:2022
+(International Organization for Standardization, 2022; PCI Security Standards Council, 2022).
+Nmap will be used during validation testing to confirm that drift-induced misconfigurations
+produce detectable network exposures and that controller remediation successfully eliminates
+them (Lyon, 2024).
+3.3.2 Non-functional Requirements
+The controller must detect and remediate drift within a defined response time threshold to
+minimise the window of network exposure. Financial institutions are required to maintain
+continuously available infrastructures within acceptable disruption boundaries (Basel Committee
+on Banking Supervision, 2021). The system must operate without human intervention throughout
+all test cycles. Audit logs must meet the record-keeping requirements of PCI-DSS v4.0 (PCI
+Security Standards Council, 2022) and ISO/IEC 27001:2022 (International Organization for
+Standardization, 2022). The controller must support multiple vendors and remain scalable so that
+additional nodes can be added to the topology without changes to the core controller logic
+(ContainerLab, 2024).
+3.4 implementation Requirements
+3.4.1 Hardware Requirements
+A host computer will run the ContainerLab environment and all associated containers and virtual
+machines. ContainerLab leverages Linux container technology making it more resource-efficient
+than hypervisor-based alternatives (Docker Inc., 2024). A personal computer or laptop with a
+minimum of 16 GB RAM and a multi-core processor is recommended to support stable concurrent
+operation of all emulated devices.
+3.4.2 Software Requirements
+All software used is open source. ContainerLab will define and instantiate the topology using a
+declarative YAML file with Docker as its container runtime (ContainerLab, 2024; Docker Inc.,
+2024). Nokia SR Linux will emulate core layer devices as it is natively containerised and integrates
+directly with ContainerLab (Nokia, 2024). Arista cEOS will emulate distribution layer devices
+17
+providing containerised EOS functionality suited for enterprise switching simulation (Arista
+Networks, 2024). Open vSwitch will emulate access-layer switching with 802.1Q VLAN and
+RSTP support (Open vSwitch Project, 2024). OPNsense will provide firewall and ACL
+enforcement (Deciso B.V., 2024) and ONIE will handle zero-touch provisioning on device boot
+(Open Compute Project, 2024). Zabbix will provide monitoring and telemetry collection (Zabbix
+SIA, 2024) and Python 3 with Netmiko will implement the drift detection and remediation logic
+(Byers, 2023; Python Software Foundation, 2024). Nmap will validate remediation effectiveness
+during testing (Lyon, 2024). The host operating system will be Ubuntu Linux for native
+compatibility with all tools used (Canonical Ltd., 2024).
