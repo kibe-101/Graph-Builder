@@ -1,0 +1,211 @@
+Chapter 1: Introduction 
+
+1.1 Background to the Project 
+
+Wireless Local Area Networks (WLANs) have become the primary means through which users connect their devices to institutional and enterprise networks. As organizations grow and the density of wireless-capable devices increases, the task of planning and managing AP deployments becomes increasingly complex. Conventional WLAN planning relies on manual site surveys and rule-of-thumb AP placement, an approach that is operationally inefficient and highly susceptible to coverage gaps, signal interference, and unbalanced network load at scale (Gast, 2005).  
+
+Graph theory offers a formal mathematical framework for modelling network environments, representing physical spaces as graphs in which nodes correspond to locations and edges represent signal reachability. Classical graph algorithms such as the Minimum Dominating Set (MDS) enable the identification of the minimum number of APs required to achieve full spatial coverage replacing trial-and-error placement with a deterministic, mathematically grounded approach (Hedetniemi & Laskar, 1990). Complementary to this, K-Means Clustering, an unsupervised machine learning algorithm, provides a density-aware alternative by positioning APs at the centroid of user density clusters, ensuring coverage reflects real-world occupancy patterns (MacQueen, 1967). 
+
+Beyond placement, operational management of a deployed WLAN requires continuous monitoring of per-AP load, user density, and bandwidth availability. Without automated density estimation and load-balancing mechanisms, network administrators have no systematic means of detecting congestion or redistributing users before service quality degrades. It is the principle of algorithm-driven, data-informed WLAN planning and operational management that underpins the interactive system proposed in this project. 
+
+1.2 Problem Statement 
+
+Network administrators and facilities managers continue to face significant operational challenges from suboptimal AP placement and reactive network management. In environments such as university campuses, hospitals, corporate offices, and public venues, poorly planned WLAN deployments result in coverage dead zones, overloaded APs, and inequitable distribution of bandwidth directly degrading the user experience and productivity of connected clients.  
+
+The problem is twofold. First, existing WLAN planning tools are either proprietary and expensive such as Ekahau Site Survey or highly complex simulation environments such as NS-3 and OMNeT++ that require specialist expertise and lack accessible interactive interfaces for comparative algorithm evaluation. This creates a gap between academic research into placement optimization and the practical tools available to network practitioners (Kamenetsky & Unbehaun, 2002). 
+
+Second, most planning tools rely on a single placement algorithm, limiting their ability to adapt to different environmental conditions and user distribution patterns. No existing open tool provides a side-by-side comparison of multiple placement strategies alongside real-time crowd density estimation and automated load-balancing recommendations within a unified interactive interface. 
+
+Without an accessible, algorithm-driven planning system capable of placement optimisation, density-aware monitoring, and load-balancing guidance, WLAN deployments remain dependent on manual processes that are too imprecise and reactive for the demands of modern high-density environments. 
+
+1.3 Objectives of the Study 
+
+1.3.1 General Objective 
+
+The main objective is to design and implement an interactive system for graph-theoretic WLAN planning that applies Greedy Minimum Dominating Set and K-Means Clustering algorithms to optimise AP placement, estimates crowd density in real time, and generates automated load-balancing recommendations to ensure equitable and reliable network service for all connected clients. 
+
+1.3.2 Specific Objectives 
+
+To evaluate the application of graph theory, specifically the Minimum Dominating Set problem, as a mathematically rigorous approach to determining optimal AP placement in a modelled WLAN environment. 
+
+ To review existing WLAN planning tools and identify gaps in their support for open, comparative algorithm evaluation alongside interactive density estimation and load-balancing capabilities. 
+
+ To design and implement an interactive web-based simulation system using React, TypeScript, and Python that models a WLAN environment as a 2D grid graph, places APs using both Greedy MDS and K-Means Clustering and visualizes results through a live canvas interface. 
+
+ To evaluate and compare the performance of both placement algorithms across key metrics including number of APs deployed, signal coverage, average RSSI, crowd density classification, and congestion rate under varying user distribution scenarios.  
+
+1.4 Scope and Limitations 
+
+The project focuses on developing an interactive WLAN planning simulator using a graph-theoretic model implemented in Python and a React and TypeScript web dashboard. The scope includes modelling 2D and 3D grid environments, applying Greedy MDS and K-Means Clustering for AP placement, simulating user distribution, computing RSSI via the log-distance path-loss model, classifying crowd density as Low, Medium, or High, and generating load-balancing recommendations. The system supports multi-floor environments with per-floor AP placement and 3D visualization using React Three Fiber. 
+
+However, several limitations apply. The simulation models signal propagation using a simplified log-distance formula that does not account for physical obstacles such as walls, pillars, or furniture, which can significantly affect real-world RSSI. GPS-based area mapping is only reliable outdoors, as satellite signals are weakened or unavailable in indoor environments. The K-Means algorithm requires the number of APs to be specified in advance and does not guarantee uniform spatial coverage. User positions are simulated randomly and do not reflect real movement patterns or time-varying occupancy. Additionally, the system operates as a planning and analysis tool and is not integrated with physical AP hardware for live deployment.  
+
+1.5 Significance of the Study 
+
+This study holds significance across academic, operational, and practical dimensions. In high-density environments such as university lecture halls, hospital wards, and corporate offices, AP placement directly determines the quality of wireless connectivity experienced by every user. This study introduces an open, interactive system that enables network planners to visualize, compare, and evaluate AP placement strategies before any physical hardware is deployed — reducing costly trial-and-error installation. 
+
+From an academic perspective, the side-by-side comparison of Greedy MDS and K-Means Clustering provides a structured empirical basis for evaluating two fundamentally different optimization approaches one grounded in graph coverage theory and the other in machine learning clustering contributing to the existing body of literature on algorithmic WLAN planning.  
+
+From an operational perspective, the automated crowd density estimation and load-balancing recommendation engine provides administrators with actionable intelligence to redistribute network load before congestion impacts users shifting network management from a reactive to a proactive posture. 
+
+The system's open architecture and browser-based accessibility also address a recognised gap in available tooling: unlike proprietary platforms, this project makes comparative WLAN planning available without licensing costs or specialist software expertise, broadening access for researchers, students, and practitioners alike. 
+
+ 
+
+ 
+
+Chapter 2: Literature Review 
+
+2.1 Introduction 
+
+This chapter reviews existing literature relevant to the design and implementation of a graph-theoretic WLAN planning system with crowd density estimation and network load balancing. The review is structured around four key areas: the fundamentals of WLAN architecture and operation, the application of graph theory to network planning, crowd density estimation techniques, and existing tools and systems developed for similar purposes.  
+
+2.2 Technological Review 
+
+This highlight of this sub-topic provides technical analysis of core technologies forming the foundation of the project. 
+
+2.2.1 Wireless LAN and Access Point Architecture 
+
+Wireless Local Area Networks (WLANs) operate under the IEEE 802.11 family of standards, commonly known as Wi-Fi. A WLAN consists of one or more Access Points (APs) that serve as bridges between wireless clients and a wired distribution network. Each AP broadcasts a signal across a defined coverage area, and clients associate with the AP that provides the strongest Received Signal Strength Indicator (RSSI). RSSI is typically modeled using the log-distance path-loss formula, which accounts for signal attenuation over distance and environmental obstructions. 
+
+ The placement of APs directly affects network performance. An insufficient number of APs results in coverage gaps, while an excessive number can cause co-channel interference. Determining the optimal number and position of APs is therefore a critical problem in WLAN planning.  
+
+2.2.2 Graph Theory in Network Modeling 
+
+Graph theory provides a formal mathematical framework for modeling network topologies. A network environment can be represented as a graph G = (V, E), where vertices V correspond to physical locations and edges E represent connectivity or reachability between them. This representation enables the application of classical graph algorithms to network planning problems.  
+
+One well-studied problem is the Minimum Dominating Set (MDS), which seeks the smallest subset of vertices such that every vertex in the graph is either in the subset or adjacent to a member of it. Applied to WLAN planning, finding an MDS corresponds to identifying the minimum number of AP locations that provide full coverage of the environment. Since MDS is NP-hard in the general case, greedy approximation algorithms are commonly used in practice, offering near-optimal solutions in polynomial time. 
+
+  
+
+2.2.3 K-Means Clustering for AP Placement 
+
+K-Means is an unsupervised machine learning algorithm that partitions a dataset into K clusters by iteratively assigning data points to the nearest centroid and recalculating centroids until convergence. In the context of WLAN planning, user positions can be treated as data points, and APs placed at cluster centroids ensure coverage is directed toward areas of high user density. This approach is particularly effective in environments where user distribution is non-uniform and known in advance or estimable from historical data.  
+
+2.2.4 Crowd Density Estimation 
+
+Crowd density estimation in network environments is typically derived from the number of clients associated with each AP. Classification into Low, Medium, and High-density levels allows network administrators to anticipate congestion and allocate resources accordingly. Researchers have proposed density-aware resource management frameworks that dynamically adjust bandwidth allocation based on real-time client counts and signal quality metrics. Such frameworks form the basis of the density classification and load-balancing components implemented in this project. 
+
+  
+
+2.2.5 Network Load Balancing 
+
+Load balancing in WLANs aims to distribute client connections evenly across available APs to prevent any single AP from becoming a bottleneck. Techniques include RSSI-based handoff, where clients are migrated to less loaded APs with acceptable signal strength, and bandwidth-threshold-based triggering, where rebalancing is initiated when an AP's per-client bandwidth drops below a defined minimum. Automated load-balancing systems that generate rebalancing recommendations have been shown to improve overall network throughput and reduce packet loss in dense environments.  
+
+2.3 Existing Systems and Tools 
+
+Several tools and systems have been developed for WLAN planning and management, each with varying degrees of capability: 
+
+Ekahau Site Survey  
+
+A professional WLAN planning tool that uses RF simulation modeling to optimise AP placement. While highly accurate, it is proprietary, expensive, and does not expose its placement algorithms for academic analysis (Ekahau, 2023). 
+
+NetSpot 
+
+ A Wi-Fi analysis and survey tool that visualises signal coverage through heatmaps. It is primarily diagnostic rather than predictive, and does not support algorithmic placement optimisation (NetSpot, 2023). 
+
+OpenWIPS-ng  
+
+ An open-source wireless intrusion prevention system focused on detecting rogue devices and attacks on WLANs. It addresses security rather than coverage planning (Shand, 2011). 
+
+ 2.4 Gap in existing work 
+
+Most professional WLAN tools are black boxes. Ekahau will tell you where to put your APs; it won't tell you why. In a research context, that distinction matters that understanding the reasoning behind a placement decision is often more valuable than the decision itself. This project runs both Greedy MDS and K-Means under identical conditions with all logic exposed, so you can compare them rather than just accept an output. 
+
+There's also a workflow problem. Ekahau handles pre-deployment planning. NetSpot handles post-deployment diagnostics. Nothing connects the two. No existing open tool takes you from initial placement through live density monitoring to congestion detection and a remediation recommendation in one pipeline. That's the gap this project is filled. 
+
+Cost is another issue. Enterprise tools charge licensing fees that most small organizations, universities, and individual researchers simply can't absorb. The open-source alternatives NS-3, OMNeT++ are technically powerful but require significant configuration expertise to use effectively. This project runs entirely in the browser, with no installation and no licensing cost. 
+
+On the technical side, every open WLAN planning tool currently operates in 2D. Real buildings have floors. Hospitals, universities, and office blocks in these environments require an understanding of vertical signal propagation, not just horizontal. This project models multi-floor environments with a per-floor AP placement engine and a floor penetration loss model, which no comparable open tool currently offers. 
+
+Reproducibility is a problem, too. Proprietary tools don't let researchers inspect, replicate, or challenge their internal logic. This project uses a seeded random number generator for user placement, so any researcher can reproduce exact experimental conditions by reusing the same configuration as a basic requirement of rigorous research that commercial tools simply don't support. 
+
+Finally, current tools react. NetSpot finds problems that already exist. This project simulates the network before anything is physically installed, generates congestion predictions under different user loads, and suggests load-balancing actions in advance. The shift is from diagnosing failure to avoiding it. 
+
+  
+
+2.5 Conceptual framework 
+
+The project is built around three layers that connect into a single planning and management pipeline. 
+
+The first layer models the physical space as a graph node represent discrete locations; edges represent signal reachability between them. This converts the placement problem from a spatial question into a mathematical one that graph algorithms can solve directly. 
+
+The second layer runs two placement algorithms on that model. Greedy Minimum Dominating Set finds the fewest AP positions needed for complete topological coverage, optimizing efficiency. K-Means Clustering places APs at the centroid of user density clusters, optimizing proximity to where people are. Because they're solving different things, running them side by side under identical conditions gives a genuine comparison of trade-offs, not just a performance ranking. 
+
+The third layer takes those placements and the simulated user distribution and works through four operations in sequence: RSSI calculation using the log-distance path-loss model (with floor penetration penalties in multi-floor environments); crowd density classification into Low, Medium, or High relative to mean per-AP user count; per-user bandwidth allocation based on total AP capacity and connected clients; and congestion detection when per-user bandwidth drops below the defined minimum. When congestion is detected, the load-balancing engine identifies which APs are overloaded and recommends specific user migrations to the nearest underloaded AP.  
+
+ 
+
+ 
+
+ 
+
+Chapter 3: Design Methodology 
+
+3.1 Introduction 
+
+This chapter describes the methodology adopted for the design and implementation of the interactive WLAN planning and crowd density estimation system. It outlines the project methodology, presents the functional and non-functional requirements of the system, details the hardware and software needed to build and validate the proposed solution, and defines the testing approach used to verify correctness and performance. 
+
+ 3.2 Project Methodology 
+
+The methodology adopted is Design Thinking, a human-centered, iterative problem-solving framework that structures development around five stages: Empathize, Define, Ideate, Prototype, and Test (Interaction Design Foundation, 2023). Design Thinking was selected because the system serves a practical user need accessible, algorithm-transparent WLAN planning that cannot be fully specified upfront. Iterative prototyping allows the simulation engine and dashboard to be refined together as design decisions are confirmed through use. This aligns with the iterative nature of simulation system development, where algorithmic and interface requirements evolve together (Stickdorn et al., 2022).  
+
+          Figure 3.1 Design Thinking Methodology (Brown, 2008; IDEO, 2015) 
+
+3.2.1 Justification of the Methodology 
+
+Design Thinking is appropriate for this project for three reasons. First, the problem space is human centered, the absence of accessible, open WLAN planning tools is a documented operational frustration among network practitioners and researchers, making empathy-driven problem framing essential before solution design begins (Lewrick, Link & Leifer, 2022). Second, the system integrates two distinct concerns algorithmic correctness and interface usability which benefit from the parallel iterative refinement that Design Thinking supports, rather than a linear waterfall sequence where interface design follows algorithm completion. Third, because no existing open tool covers the full pipeline from placement through density estimation to load-balancing recommendations, the solution required exploratory ideation across multiple design alternatives before a final architecture was committed to (Brown & Katz, 2023). 
+
+3.3 Feature and Design Requirements 
+
+This section presents the features that describe the operation of the simulation environment and the proposed interactive WLAN planning system.  
+
+3.3.1 Functional Requirements 
+
+A WLAN environment will be modelled as a 2D grid graph G = (V, E) using NetworkX, where each node represents a discrete physical location and each edge represents signal reachability between adjacent locations (Hagberg et al., 2022). The graph will support configurable grid dimensions and user counts, enabling evaluation across environments of varying scale and density. 
+
+ AP placement will be performed by two algorithms. The Greedy Minimum Dominating Set algorithm will identify the minimum number of AP positions required for full topological coverage of the graph. K-Means Clustering will position APs at the centroid of user density clusters, directing coverage toward areas of highest occupancy. Both algorithms will operate on identical graph instances to enable direct comparative evaluation. 
+
+ RSSI will be calculated for each user-AP pair using the log-distance path-loss model. For multi-floor environments, a configurable floor penetration loss penalty will be applied per floor of separation between the user and the AP. Crowd density will be classified as Low, Medium, or High relative to the mean per-AP user count, and per-user bandwidth will be calculated by dividing total AP capacity by the number of connected clients. 
+
+ Congestion detection will trigger when per-user bandwidth falls below a defined minimum threshold. Upon detection, the load-balancing engine will identify overloaded APs and recommend user migrations to the nearest underloaded AP with acceptable signal strength. All simulation parameters, results, and recommendations will be returned as structured JSON and rendered through the interactive dashboard. 
+
+ The system will support multi-floor environments of one to five floors, with per-floor AP placement and 3D visualization using React Three Fiber (Dirksen, 2023). All simulation results will be persistently stored in a PostgreSQL database via Drizzle ORM to support retrieval and comparison of historical simulation runs. 
+
+3.3.2 Non-Functional Requirements 
+
+The simulation engine must return results within an acceptable response time for interactive use, ensuring that parameter changes are reflected in the dashboard without perceptible delay. The system must operate entirely through a browser-based interface with no local installation requirement, making it accessible to users across different operating systems and devices. The architecture must be modular, enabling new placement algorithms to be added to the simulation engine without changes to the API contract or dashboard components. The system must support reproducible simulation runs through seeded random number generation, ensuring that identical parameters produce identical results across sessions as a requirement for academic experimental validity (ACM, 2022). The dashboard must accurately reflect simulation of engine output at all times, with no stale or cached state presented to the user following a configuration change. 
+
+3.4 Implementation Requirements 
+
+3.4.1 Hardware Requirements 
+
+A host computer will run the development environment, simulation engine, API server, and browser-based dashboard. Because the simulation is CPU-bound rather than GPU-bound, standard commodity hardware is sufficient. A personal computer or laptop with a minimum of 8 GB RAM and a multi-core processor is recommended to support concurrent operation of the Python simulation engine, Express API server, and Vite development server without resource contention. 
+
+3.4.2 Software Requirements 
+
+All software used is open source or freely available under a permissive license. Python 3 will implement the simulation engine, including graph construction, AP placement, RSSI calculation, density estimation, and load-balancing logic (Python Software Foundation, 2024). Network will provide the graph data structure and adjacency operations required for MDS computation (Hagberg et al., 2022). NumPy will provide efficient array operations for K-Means distance calculations and centroid updates (Harris et al., 2022). 
+
+ React and TypeScript will implement the interactive frontend dashboard, providing a component-based architecture suited to the modular structure of the simulation interface (Meta Open Source, 2024). Vite will serve as the frontend build tool and development server, providing fast hot-module replacement during iterative development (Vite, 2024). React Three Fiber will implement the 3D multi-floor visualisation, providing a declarative React interface to the Three.js rendering engine (Dirksen, 2023). 
+
+ Express.js will implement the REST API server, bridging the React frontend and the Python simulation engine by receiving simulation parameters and returning structured JSON results (OpenJS Foundation, 2024). PostgreSQL will provide relational persistence for simulation run history, and Drizzle ORM will provide type-safe schema definition and query construction in TypeScript (Drizzle Team, 2024). The pnpm package manager will manage the monorepo workspace, coordinating dependencies and build scripts across the frontend, API server, and shared library packages (pnpm, 2024). The host operating system will be Ubuntu Linux for native compatibility with all tools used (Canonical Ltd., 2024).  
+
+3.5 Testing 
+
+Testing will be conducted across three levels to validate both the correctness of the simulation engine and the behaviour of the integrated system. 
+
+3.5.1 Unit Testing  
+
+This will verify individual simulation functions in isolation against known input-output pairs. Specific cases include: RSSI calculation correctness at defined distances and floor separations; density classification boundary conditions at Low-to-Medium and Medium-to-High thresholds; MDS validity (confirming every node is either an AP or adjacent to one); K-Means convergence to correct centroids on controlled distributions; and load-balancing trigger accuracy when per-user bandwidth crosses the defined minimum threshold. 
+
+3.5.2 Black-Box Testing 
+
+This will evaluate the end-to-end system by varying simulation parameters through the dashboard interface including grid size, user count, number of floors, and algorithm selection and verifying that visualized outputs match expected behavior without inspecting internal code paths. This tests the integrity of the full pipeline from parameter submission through API processing to dashboard rendering. 
+
+ 3.5.3 White-Box Testing  
+
+This evaluates algorithmic paths directly using controlled graph instances of known optimal solutions. For Greedy MDS, test graphs with a pre-computed minimum dominating set will confirm that the greedy approximation produces a valid dominating set within the expected approximation bound. For K-Means, uniform and clustered user distributions will verify centroid placement correctness and convergence behavior. 
+
+ 
+
+ 
