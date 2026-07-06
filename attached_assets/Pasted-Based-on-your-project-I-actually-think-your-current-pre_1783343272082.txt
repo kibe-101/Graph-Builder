@@ -1,0 +1,496 @@
+Based on your project, I actually think your current presentation style is fighting against the subject matter.
+
+Your application is essentially a **network operations dashboard**—it's analytical, mathematical, and engineering-focused. Meanwhile, your presentation theme sounds like something for a startup pitch or an educational technology product. Those aren't necessarily bad aesthetics, but they don't reinforce the message of your dissertation.
+
+## I'd aim for this instead:
+
+> **Modern Research Lab / Cisco Live / IEEE Conference / Microsoft Azure Portal**
+
+Not corporate marketing.
+
+Not playful.
+
+Not dull academic PowerPoint either.
+
+Think **clean engineering presentation**.
+
+---
+
+# Overall Style
+
+### Theme
+
+**Intelligent Network Operations Center**
+
+Imagine a mix of:
+
+* Cisco Live presentations
+* Juniper Networks
+* Azure architecture documentation
+* Grafana dashboards
+* Modern IEEE conference slides
+
+The audience should immediately think
+
+> "This is an engineering project."
+
+---
+
+# Color Palette
+
+Instead of coral and playful colors:
+
+| Purpose    | Color   |
+| ---------- | ------- |
+| Background | #0F172A |
+| Cards      | #1E293B |
+| Primary    | #3B82F6 |
+| Secondary  | #38BDF8 |
+| Success    | #22C55E |
+| Warning    | #F59E0B |
+| Accent     | #8B5CF6 |
+| Text       | #F8FAFC |
+| Muted      | #94A3B8 |
+
+Very close to your application.
+
+That consistency subconsciously tells the examiner
+
+> "The presentation belongs to this software."
+
+---
+
+# Typography
+
+I'd actually use
+
+## Headlines
+
+Space Grotesk Bold
+
+or
+
+Manrope ExtraBold
+
+instead of IBM Plex.
+
+Then
+
+## Body
+
+Inter
+
+Exactly the same font as the app.
+
+Consistency matters.
+
+---
+
+# Background
+
+Avoid busy illustrations.
+
+Instead:
+
+Very subtle
+
+* grid
+* graph nodes
+* tiny network topology lines
+* blueprint texture
+
+Like this:
+
+```
+...................................
+
+      ○────○────○
+
+         │
+
+      ○────○────○
+
+...................................
+```
+
+Only 3–5% opacity.
+
+---
+
+# Icons
+
+Use
+
+* Lucide
+* Heroicons
+
+Thin outline icons.
+
+Examples
+
+📡 AP
+
+📶 Signal
+
+👥 Crowd
+
+🧠 AI
+
+⚙️ Processing
+
+📈 Performance
+
+---
+
+# Illustrations
+
+Instead of cartoon-ish vectors
+
+I'd use
+
+minimal isometric
+
+or
+
+wireframe
+
+illustrations.
+
+Example:
+
+Venue floor
+
+```
+□□□□□□□□□□□□□□□
+
+○     ○      ○
+
+ ))))  ))))  ))))
+
+ ●●●●●● Crowd
+
+```
+
+Almost like engineering diagrams.
+
+---
+
+# Diagrams
+
+Your diagrams should become the visual focus.
+
+Large.
+
+Simple.
+
+Professional.
+
+For example
+
+```
+Users
+
+↓
+
+Crowd Density
+
+↓
+
+Graph Model
+
+↓
+
+Minimum Dominating Set
+
+↓
+
+AP Placement
+
+↓
+
+RSSI Simulation
+
+↓
+
+Load Balancing
+
+↓
+
+Performance Metrics
+```
+
+Rather than paragraphs.
+
+---
+
+# Slide Layout
+
+Lots of whitespace.
+
+Example
+
+```
+------------------------------------------------
+
+Large title
+
+Small subtitle
+
+Diagram
+
+3 bullets maximum
+
+Footer
+
+------------------------------------------------
+```
+
+No walls of text.
+
+---
+
+# Accent Colors
+
+Instead of coral
+
+Use colors that correspond to networking.
+
+Blue
+
+↓
+
+Signal
+
+Green
+
+↓
+
+Good coverage
+
+Orange
+
+↓
+
+Medium density
+
+Red
+
+↓
+
+Congestion
+
+Purple
+
+↓
+
+Algorithms
+
+Now every colour has meaning.
+
+---
+
+# Animations
+
+Very subtle.
+
+Fade
+
+Appear
+
+Morph
+
+No spinning.
+
+No bouncing.
+
+Think Microsoft Build.
+
+---
+
+# Images
+
+Use
+
+* floor plans
+* wireless coverage maps
+* graph visualizations
+* NetworkX graphs
+* dashboards
+* heatmaps
+
+Avoid stock people shaking hands.
+
+---
+
+# The Five Main Slides
+
+## 1 Introduction
+
+Huge title
+
+Illustration
+
+Problem statement
+
+Research objectives
+
+---
+
+## 2 Literature Review
+
+Use a comparison table.
+
+Instead of
+
+Paper A
+
+Paper B
+
+Paper C
+
+Create
+
+| Study | AP Placement | Density | Load Balancing | Gap |
+| ----- | ------------ | ------- | -------------- | --- |
+
+Looks much more academic.
+
+---
+
+## 3 Design & Analysis
+
+Largest slide.
+
+One huge architecture.
+
+No paragraphs.
+
+Just
+
+Venue
+
+↓
+
+NetworkX
+
+↓
+
+Dominating Set
+
+↓
+
+RSSI
+
+↓
+
+K-Means
+
+↓
+
+Bandwidth Allocation
+
+↓
+
+Dashboard
+
+---
+
+## 4 Implementation
+
+Architecture diagram.
+
+Left
+
+Python
+
+Middle
+
+API
+
+Right
+
+React
+
+Bottom
+
+Database
+
+Very Azure-style.
+
+---
+
+## 5 Evaluation
+
+Use dashboard cards.
+
+Coverage
+
+98%
+
+Latency
+
+25 ms
+
+Balanced Load
+
+87%
+
+Accuracy
+
+91%
+
+Even though these are proposed metrics, presenting them as KPI cards makes the evaluation criteria immediately understandable.
+
+---
+
+# Should the app and presentation match?
+
+I wouldn't make them identical.
+
+I'd make them look like they're part of the same product family.
+
+For example:
+
+App
+
+* very dark
+* functional
+* dashboard
+
+Presentation
+
+* slightly brighter
+* more whitespace
+* larger typography
+* cleaner diagrams
+
+Same
+
+* colours
+* fonts
+* icons
+* diagram style
+
+Different
+
+* density of information
+
+Exactly how Apple's developer documentation resembles Xcode without literally copying it.
+
+---
+
+## The visual direction I'd recommend (9.5/10)
+
+**Theme:** Intelligent Network Operations Center
+
+**Mood:** Modern engineering research, not startup pitch
+
+**Fonts:** Space Grotesk + Inter
+
+**Colors:** Slate + blue + cyan + green + amber
+
+**Graphics:** Network topology, graph theory, heatmaps, RSSI circles, system architecture
+
+**Diagrams:** Large, minimal, with consistent line weights and iconography
+
+**Overall impression:** An examiner should feel they're looking at a polished engineering tool and its accompanying research presentation, with both clearly belonging to the same project while each being optimized for its purpose.
