@@ -2,8 +2,12 @@
 
 @theme inline {
   --color-primary: var(--slide-primary);
+  --color-secondary: var(--slide-secondary);
   --color-accent: var(--slide-accent);
+  --color-success: var(--slide-success);
+  --color-warning: var(--slide-warning);
   --color-bg: var(--slide-bg);
+  --color-card: var(--slide-card);
   --color-text: var(--slide-text);
   --color-muted: var(--slide-muted);
   --font-display: var(--font-display-family);
@@ -38,15 +42,18 @@
 }
 
 :root {
-  --slide-primary: #16233f;
-  --slide-accent: #ff6b47;
-  --slide-bg: #f7f4ec;
-  --slide-text: #16233f;
-  --slide-muted: #5c6478;
-  --slide-teal: #00b8b0;
+  --slide-primary: #3b82f6;
+  --slide-secondary: #38bdf8;
+  --slide-accent: #8b5cf6;
+  --slide-success: #22c55e;
+  --slide-warning: #f59e0b;
+  --slide-bg: #0f172a;
+  --slide-card: #1e293b;
+  --slide-text: #f8fafc;
+  --slide-muted: #94a3b8;
   --font-display-family: "Space Grotesk", system-ui, sans-serif;
-  --font-body-family: "IBM Plex Sans", system-ui, sans-serif;
-  color-scheme: light;
+  --font-body-family: "Inter", system-ui, sans-serif;
+  color-scheme: dark;
 }
 
 html,
@@ -74,12 +81,14 @@ body {
   -webkit-user-select: none;
 }
 
-.dot-grid {
-  background-image: radial-gradient(circle, rgba(247, 244, 236, 0.16) 1.5px, transparent 1.5px);
-  background-size: 3.2vw 3.2vw;
+.grid-topology {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+  background-size: 4.2vw 4.2vw;
 }
 
-.dot-grid-dark {
-  background-image: radial-gradient(circle, rgba(22, 35, 63, 0.1) 1.5px, transparent 1.5px);
-  background-size: 3.2vw 3.2vw;
+.node-dot {
+  background-image: radial-gradient(circle, rgba(56, 189, 248, 0.14) 1.6px, transparent 1.6px);
+  background-size: 3.6vw 3.6vw;
 }
