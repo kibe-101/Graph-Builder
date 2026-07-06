@@ -1,0 +1,31 @@
+kind = "slides"
+previewPath = "/wlan-proposal-deck/"
+title = "WLAN Planning Proposal Presentation"
+version = "1.0.0"
+id = "artifacts/wlan-proposal-deck"
+router = "path"
+
+[[integratedSkills]]
+name = "slides"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/wlan-proposal-deck/" ]
+localPort = 22816
+
+[services.development]
+run = "pnpm --filter @workspace/wlan-proposal-deck run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/wlan-proposal-deck", "run", "build" ]
+publicDir = "artifacts/wlan-proposal-deck/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22816"
+BASE_PATH = "/wlan-proposal-deck/"
