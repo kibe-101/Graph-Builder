@@ -1,1 +1,82 @@
-[]
+[
+  {
+    "id": "b1f2a3c4-1111-4a1a-9a11-000000000001",
+    "position": 1,
+    "filepath": "src/pages/slides/Title.tsx",
+    "title": "Graph-Theoretic WLAN Planning",
+    "description": "Title slide",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1f2a3c4-1111-4a1a-9a11-000000000002",
+    "position": 2,
+    "filepath": "src/pages/slides/TheProblem.tsx",
+    "title": "The Problem",
+    "description": "Introduction: problem statement",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1f2a3c4-1111-4a1a-9a11-000000000003",
+    "position": 3,
+    "filepath": "src/pages/slides/AimObjectives.tsx",
+    "title": "Aim and Objectives",
+    "description": "Introduction: aim and objectives",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1f2a3c4-1111-4a1a-9a11-000000000004",
+    "position": 4,
+    "filepath": "src/pages/slides/ResearchGaps.tsx",
+    "title": "Research Gaps",
+    "description": "Literature review: research gaps",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1f2a3c4-1111-4a1a-9a11-000000000005",
+    "position": 5,
+    "filepath": "src/pages/slides/ConceptualFramework.tsx",
+    "title": "Conceptual Framework",
+    "description": "Design and analysis: conceptual framework",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1f2a3c4-1111-4a1a-9a11-000000000006",
+    "position": 6,
+    "filepath": "src/pages/slides/CoreAlgorithms.tsx",
+    "title": "Core Algorithms",
+    "description": "Design and analysis: core algorithms",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1f2a3c4-1111-4a1a-9a11-000000000007",
+    "position": 7,
+    "filepath": "src/pages/slides/SystemArchitecture.tsx",
+    "title": "System Architecture",
+    "description": "Implementation: system architecture",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1f2a3c4-1111-4a1a-9a11-000000000008",
+    "position": 8,
+    "filepath": "src/pages/slides/InteractiveSimulation.tsx",
+    "title": "Interactive Simulation",
+    "description": "Implementation: interactive simulation",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1f2a3c4-1111-4a1a-9a11-000000000009",
+    "position": 9,
+    "filepath": "src/pages/slides/EvaluationPlan.tsx",
+    "title": "Evaluation Plan",
+    "description": "Evaluation: methodology and testing",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1f2a3c4-1111-4a1a-9a11-000000000010",
+    "position": 10,
+    "filepath": "src/pages/slides/ThankYou.tsx",
+    "title": "Thank You",
+    "description": "Closing slide",
+    "speakerNotes": ""
+  }
+]

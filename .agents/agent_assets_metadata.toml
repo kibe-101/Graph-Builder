@@ -1,5 +1,16 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "_iVa6IXGW2-4xc9esfjIb"
+uri = "file://artifacts/wlan-proposal-deck/public/hero-venue.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "g6_KNPOul_BmlCMhbGT5S"
+uri = "file://artifacts/wlan-proposal-deck/public/dashboard-mockup.png"
+type = "image"
+title = "generated_image"
 
 [[outputs]]
 id = "O91EspZlEuvY_gPU17U6o"
