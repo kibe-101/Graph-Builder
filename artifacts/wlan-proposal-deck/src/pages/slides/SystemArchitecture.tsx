@@ -9,44 +9,42 @@ export default function SystemArchitecture() {
           System Architecture
         </h2>
 
-        <div className="flex flex-col items-center gap-[2vh] max-w-[80vw]">
-          <div className="flex items-center gap-[2vw] w-full justify-center">
-            <div className="w-[24vw] rounded-[0.8vw] bg-card border border-primary/30 p-[1.8vw] text-center">
-              <p className="font-display font-bold text-[2.6vw] text-primary mb-[1vh]">Python Engine</p>
-              <p className="font-body text-[2.1vw] text-muted leading-snug">
-                Graph, placement, density, and bandwidth logic
-              </p>
-            </div>
-            <svg className="w-[4vw] h-[2vw]" viewBox="0 0 100 40" fill="none">
-              <path d="M2 20H90" stroke="#94A3B8" strokeWidth="2.5" />
-              <path d="M78 10L92 20L78 30" stroke="#94A3B8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <div className="w-[24vw] rounded-[0.8vw] bg-card border border-secondary/30 p-[1.8vw] text-center">
-              <p className="font-display font-bold text-[2.6vw] text-secondary mb-[1vh]">API Layer</p>
-              <p className="font-body text-[2.1vw] text-muted leading-snug">
-                Express API and PostgreSQL storage
-              </p>
-            </div>
-            <svg className="w-[4vw] h-[2vw]" viewBox="0 0 100 40" fill="none">
-              <path d="M2 20H90" stroke="#94A3B8" strokeWidth="2.5" />
-              <path d="M78 10L92 20L78 30" stroke="#94A3B8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <div className="w-[24vw] rounded-[0.8vw] bg-card border border-accent/30 p-[1.8vw] text-center">
-              <p className="font-display font-bold text-[2.6vw] text-accent mb-[1vh]">React Frontend</p>
-              <p className="font-body text-[2.1vw] text-muted leading-snug">
-                Interactive TypeScript visualization
-              </p>
-            </div>
+        <div className="w-full max-w-[84vw] rounded-[0.8vw] overflow-hidden border border-white/10 bg-card">
+          <div className="grid grid-cols-[1fr_1.1fr_2.5fr] bg-primary/20 px-[2vw] py-[1.4vh]">
+            <p className="font-display font-bold text-[2vw] text-text">Layer</p>
+            <p className="font-display font-bold text-[2vw] text-text">Technology</p>
+            <p className="font-display font-bold text-[2vw] text-text">Responsibility</p>
           </div>
 
-          <svg className="w-[2vw] h-[3vh]" viewBox="0 0 20 40" fill="none">
-            <path d="M10 2V32" stroke="#94A3B8" strokeWidth="2.5" />
-            <path d="M2 24L10 34L18 24" stroke="#94A3B8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <div className="grid grid-cols-[1fr_1.1fr_2.5fr] border-t border-white/10 px-[2vw] py-[1.5vh]">
+            <p className="font-body text-[1.9vw] font-medium text-primary">Simulation Engine</p>
+            <p className="font-body text-[1.9vw] text-muted">Python</p>
+            <p className="font-body text-[1.9vw] leading-snug text-text/90">
+              Graph modelling, AP placement, K-Means, RSSI, and bandwidth optimization
+            </p>
+          </div>
 
-          <div className="w-[40vw] rounded-[0.8vw] bg-card border border-white/10 p-[1.6vw] text-center">
-            <p className="font-body text-[2.3vw] text-text/85">
-              PostgreSQL database
+          <div className="grid grid-cols-[1fr_1.1fr_2.5fr] border-t border-white/10 px-[2vw] py-[1.5vh]">
+            <p className="font-body text-[1.9vw] font-medium text-secondary">API Layer</p>
+            <p className="font-body text-[1.9vw] text-muted">Express</p>
+            <p className="font-body text-[1.9vw] leading-snug text-text/90">
+              Connects the simulation engine to the frontend
+            </p>
+          </div>
+
+          <div className="grid grid-cols-[1fr_1.1fr_2.5fr] border-t border-white/10 px-[2vw] py-[1.5vh]">
+            <p className="font-body text-[1.9vw] font-medium text-accent">Frontend</p>
+            <p className="font-body text-[1.9vw] text-muted">React + TypeScript</p>
+            <p className="font-body text-[1.9vw] leading-snug text-text/90">
+              Visualizes coverage, density, signal strength, and network load
+            </p>
+          </div>
+
+          <div className="grid grid-cols-[1fr_1.1fr_2.5fr] border-t border-white/10 px-[2vw] py-[1.5vh]">
+            <p className="font-body text-[1.9vw] font-medium text-warning">Database</p>
+            <p className="font-body text-[1.9vw] text-muted">PostgreSQL</p>
+            <p className="font-body text-[1.9vw] leading-snug text-text/90">
+              Stores configurations and simulation results
             </p>
           </div>
         </div>
