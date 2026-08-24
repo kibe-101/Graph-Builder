@@ -15,7 +15,7 @@ export default function ResearchGaps() {
               <div className="w-[1vw] h-[1vw] rounded-full bg-primary" />
             </div>
             <p className="font-body text-[2.8vw] leading-snug text-text">
-              AP placement research optimizes coverage but rarely accounts for crowd density.
+              AP placement often ignores crowd density.
             </p>
           </div>
           <div className="flex items-center gap-[1.8vw] rounded-[0.7vw] bg-card border border-white/5 px-[2.2vw] py-[2.4vh]">
@@ -23,7 +23,7 @@ export default function ResearchGaps() {
               <div className="w-[1vw] h-[1vw] rounded-full bg-secondary" />
             </div>
             <p className="font-body text-[2.8vw] leading-snug text-text">
-              Density estimation studies rarely connect back to network resource allocation.
+              Density studies rarely inform resource allocation.
             </p>
           </div>
           <div className="flex items-center gap-[1.8vw] rounded-[0.7vw] bg-card border border-white/5 px-[2.2vw] py-[2.4vh]">
@@ -31,7 +31,7 @@ export default function ResearchGaps() {
               <div className="w-[1vw] h-[1vw] rounded-full bg-accent" />
             </div>
             <p className="font-body text-[2.8vw] leading-snug text-text">
-              Few systems unify placement, density, and load balancing in one interactive model.
+              Few tools unify placement, density, and load balancing.
             </p>
           </div>
         </div>

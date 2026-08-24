@@ -14,13 +14,13 @@ export default function TheProblem() {
 
           <div className="flex flex-col gap-[2.2vh]">
             <p className="font-body text-[2.3vw] leading-snug text-text">
-              Dense public venues suffer poor Wi-Fi coverage and congestion.
+              Crowded venues face weak coverage and congestion.
             </p>
             <p className="font-body text-[2.3vw] leading-snug text-muted">
-              Manual access point placement is slow, costly, and doesn't adapt to crowd movement.
+              Manual AP placement is costly and static.
             </p>
             <p className="font-body text-[2.3vw] leading-snug text-muted">
-              Existing tools rarely combine coverage planning with real-time density and load awareness.
+              Existing tools rarely connect coverage, density, and load.
             </p>
           </div>
         </div>

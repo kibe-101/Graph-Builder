@@ -12,13 +12,13 @@ export default function InteractiveSimulation() {
 
           <div className="flex flex-col gap-[2.4vh]">
             <p className="font-body text-[2.7vw] leading-snug text-text/90">
-              Place a venue grid, generate simulated crowds, and view AP coverage live.
+              Build a venue grid and generate a simulated crowd.
             </p>
             <p className="font-body text-[2.7vw] leading-snug text-muted">
-              Heatmaps show signal strength and density zones.
+              Heatmaps show signal and density.
             </p>
             <p className="font-body text-[2.7vw] leading-snug text-muted">
-              Bandwidth allocation updates as density shifts across the grid.
+              Bandwidth adapts as density shifts.
             </p>
           </div>
         </div>

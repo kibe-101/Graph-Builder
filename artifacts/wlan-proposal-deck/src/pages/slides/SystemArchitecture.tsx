@@ -14,7 +14,7 @@ export default function SystemArchitecture() {
             <div className="w-[24vw] rounded-[0.8vw] bg-card border border-primary/30 p-[1.8vw] text-center">
               <p className="font-display font-bold text-[2.6vw] text-primary mb-[1vh]">Python Engine</p>
               <p className="font-body text-[2.1vw] text-muted leading-snug">
-                Graph modelling, placement, density, bandwidth logic
+                Graph, placement, density, and bandwidth logic
               </p>
             </div>
             <svg className="w-[4vw] h-[2vw]" viewBox="0 0 100 40" fill="none">
@@ -24,7 +24,7 @@ export default function SystemArchitecture() {
             <div className="w-[24vw] rounded-[0.8vw] bg-card border border-secondary/30 p-[1.8vw] text-center">
               <p className="font-display font-bold text-[2.6vw] text-secondary mb-[1vh]">API Layer</p>
               <p className="font-body text-[2.1vw] text-muted leading-snug">
-                Express and PostgreSQL for persistence and API access
+                Express API and PostgreSQL storage
               </p>
             </div>
             <svg className="w-[4vw] h-[2vw]" viewBox="0 0 100 40" fill="none">
@@ -34,7 +34,7 @@ export default function SystemArchitecture() {
             <div className="w-[24vw] rounded-[0.8vw] bg-card border border-accent/30 p-[1.8vw] text-center">
               <p className="font-display font-bold text-[2.6vw] text-accent mb-[1vh]">React Frontend</p>
               <p className="font-body text-[2.1vw] text-muted leading-snug">
-                TypeScript UI for interactive visualisation
+                Interactive TypeScript visualization
               </p>
             </div>
           </div>

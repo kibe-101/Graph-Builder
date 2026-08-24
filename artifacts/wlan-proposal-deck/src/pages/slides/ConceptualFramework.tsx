@@ -13,7 +13,7 @@ export default function ConceptualFramework() {
           <div className="w-[23vw] rounded-[0.8vw] bg-card border border-primary/30 p-[2.2vw] flex flex-col items-center text-center">
             <p className="font-display font-bold text-[2.8vw] text-primary mb-[1.4vh]">AP Placement</p>
             <p className="font-body text-[2.2vw] text-muted leading-snug">
-              Greedy Minimum Dominating Set over the venue grid graph
+              Minimum Dominating Set on the venue graph
             </p>
           </div>
 
@@ -25,7 +25,7 @@ export default function ConceptualFramework() {
           <div className="w-[23vw] rounded-[0.8vw] bg-card border border-secondary/30 p-[2.2vw] flex flex-col items-center text-center">
             <p className="font-display font-bold text-[2.8vw] text-secondary mb-[1.4vh]">Density Estimation</p>
             <p className="font-body text-[2.2vw] text-muted leading-snug">
-              Classifies crowd zones as Low, Medium, or High
+              K-Means density classification
             </p>
           </div>
 
@@ -37,13 +37,13 @@ export default function ConceptualFramework() {
           <div className="w-[23vw] rounded-[0.8vw] bg-card border border-accent/30 p-[2.2vw] flex flex-col items-center text-center">
             <p className="font-display font-bold text-[2.8vw] text-accent mb-[1.4vh]">Load Balancing</p>
             <p className="font-body text-[2.2vw] text-muted leading-snug">
-              Reallocates bandwidth across APs as density shifts
+              Bandwidth adapts to changing demand
             </p>
           </div>
         </div>
 
         <p className="font-body text-[2.4vw] text-muted mt-[6vh] max-w-[72vw] leading-relaxed">
-          Each layer feeds the next, forming a closed planning-to-optimization loop over the venue's grid graph.
+          Placement → density → load balancing
         </p>
       </div>
     </div>
