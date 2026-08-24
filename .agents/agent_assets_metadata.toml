@@ -23,3 +23,9 @@ id = "iRHbB_Zla-AsQolnRswPw"
 uri = "file://wlan_simulation/density_bar_output.png"
 type = "image"
 title = "Per-AP User Count (Density Bar Chart)"
+
+[[outputs]]
+id = "pCWQIZscOxpohBBuN9oyR"
+uri = "file://.local/outputs/WLAN-Planning-Proposal-Presentation.pptx"
+type = "slides"
+title = "WLAN Planning Proposal Presentation.pptx"
