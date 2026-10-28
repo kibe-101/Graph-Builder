@@ -450,7 +450,7 @@ def run_analysis(payload: dict[str, Any]) -> dict[str, Any]:
                     )
                     if (
                         distance_cells <= config["signalRadius"]
-                        and _estimate_rssi(probe, ap, config)
+                        and _estimate_rssi(probe, ap, config, obstruction_cells)
                         >= config["minimumRssiDbm"]
                     ):
                         covered_cells.add((x, y, floor))

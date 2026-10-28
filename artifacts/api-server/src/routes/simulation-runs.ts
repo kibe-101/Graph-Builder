@@ -13,7 +13,7 @@ import {
   db,
   simulationRunsTable,
 } from "@workspace/db";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 const router: IRouter = Router();
 const MAX_PYTHON_OUTPUT_BYTES = 8 * 1024 * 1024;
@@ -99,7 +99,7 @@ function runPythonEngine(
     const root = findWorkspaceRoot();
     const enginePath = path.join(root, "wlan_simulation", "engine.py");
     const child = spawn(
-      process.env.PYTHON ?? "python3",
+      process.env.PYTHON ?? (process.platform === "win32" ? "python" : "python3"),
       [enginePath],
       { cwd: path.join(root, "wlan_simulation"), stdio: ["pipe", "pipe", "pipe"] },
     );

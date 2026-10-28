@@ -18,6 +18,7 @@ const DEFAULT_CONFIG: WlanSimulationConfig = {
   apBandwidthMbps: 100, congestionThreshold: 0.8, minBandwidthPerUser: 1,
   randomSeed: 42, numFloors: 1, cellSizeMeters: 5, transmitPowerDbm: 20,
   referencePathLossDb: 40, pathLossExponent: 3, floorPenaltyDb: 15, minimumRssiDbm: -75,
+  wallLossDbPerObstruction: 5,
 };
 
 const CONFIG_FIELDS: Array<{ key: keyof WlanSimulationConfig; label: string; min: number; max: number; step: number; unit?: string }> = [
