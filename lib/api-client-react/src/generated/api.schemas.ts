@@ -8,3 +8,299 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface ApiError {
+  error: string;
+}
+
+export interface WlanSimulationConfig {
+  /**
+   * @minimum 5
+   * @maximum 30
+   */
+  gridWidth: number;
+  /**
+   * @minimum 5
+   * @maximum 30
+   */
+  gridHeight: number;
+  /**
+   * @minimum 1
+   * @maximum 8
+   */
+  signalRadius: number;
+  /**
+   * @minimum 10
+   * @maximum 500
+   */
+  numUsers: number;
+  /**
+   * @minimum 10
+   * @maximum 1000
+   */
+  apBandwidthMbps: number;
+  /**
+   * @minimum 0.5
+   * @maximum 1
+   */
+  congestionThreshold: number;
+  /**
+   * @minimum 0.5
+   * @maximum 20
+   */
+  minBandwidthPerUser: number;
+  /**
+   * @minimum 1
+   * @maximum 999
+   */
+  randomSeed: number;
+  /**
+   * @minimum 1
+   * @maximum 5
+   */
+  numFloors: number;
+  /**
+   * @minimum 0.5
+   * @maximum 50
+   */
+  cellSizeMeters: number;
+  /**
+   * @minimum 0
+   * @maximum 30
+   */
+  transmitPowerDbm: number;
+  /**
+   * @minimum 20
+   * @maximum 80
+   */
+  referencePathLossDb: number;
+  /**
+   * @minimum 1
+   * @maximum 6
+   */
+  pathLossExponent: number;
+  /**
+   * @minimum 0
+   * @maximum 40
+   */
+  floorPenaltyDb: number;
+  /**
+   * @minimum 0
+   * @maximum 20
+   */
+  wallLossDbPerObstruction: number;
+  /**
+   * @minimum -100
+   * @maximum -30
+   */
+  minimumRssiDbm: number;
+}
+
+export interface ObstructionCell {
+  /**
+   * @minimum 0
+   * @maximum 29
+   */
+  x: number;
+  /**
+   * @minimum 0
+   * @maximum 29
+   */
+  y: number;
+  /**
+   * @minimum 0
+   * @maximum 4
+   */
+  floor: number;
+}
+
+export interface UserMeasurement {
+  /**
+   * @minLength 1
+   * @maxLength 80
+   */
+  apId: string;
+  /**
+   * @minimum 0
+   * @maximum 29
+   */
+  apX: number;
+  /**
+   * @minimum 0
+   * @maximum 29
+   */
+  apY: number;
+  /**
+   * @minimum 0
+   * @maximum 4
+   * @nullable
+   */
+  apFloor?: number | null;
+  /**
+   * @minimum 0
+   * @maximum 29
+   */
+  x: number;
+  /**
+   * @minimum 0
+   * @maximum 29
+   */
+  y: number;
+  /**
+   * @minimum 0
+   * @maximum 4
+   */
+  floor: number;
+  /**
+   * @minimum -120
+   * @maximum 0
+   * @nullable
+   */
+  rssiDbm?: number | null;
+  /**
+   * @minimum 0
+   * @maximum 10000
+   * @nullable
+   */
+  throughputMbps?: number | null;
+  /**
+   * @minimum 0
+   * @maximum 100
+   * @nullable
+   */
+  channelUtilizationPercent?: number | null;
+  /**
+   * @minimum 0
+   * @maximum 100
+   * @nullable
+   */
+  packetLossPercent?: number | null;
+}
+
+export type SimulationRunInputSourceMode =
+  (typeof SimulationRunInputSourceMode)[keyof typeof SimulationRunInputSourceMode];
+
+export const SimulationRunInputSourceMode = {
+  simulation: "simulation",
+  telemetry: "telemetry",
+} as const;
+
+export interface SimulationRunInput {
+  sourceMode: SimulationRunInputSourceMode;
+  config: WlanSimulationConfig;
+  /** @maxItems 5000 */
+  measurements?: UserMeasurement[];
+  /** @maxItems 4500 */
+  obstructions?: ObstructionCell[];
+}
+
+export type AccessPointResultDensityClass =
+  (typeof AccessPointResultDensityClass)[keyof typeof AccessPointResultDensityClass];
+
+export const AccessPointResultDensityClass = {
+  LOW: "LOW",
+  MEDIUM: "MEDIUM",
+  HIGH: "HIGH",
+} as const;
+
+export interface AccessPointResult {
+  id: string;
+  x: number;
+  y: number;
+  floor: number;
+  userCount: number;
+  /** @nullable */
+  avgRssiDbm: number | null;
+  densityClass: AccessPointResultDensityClass;
+  /** @nullable */
+  bandwidthPerUserMbps: number | null;
+  congested: boolean;
+}
+
+export interface UserPoint {
+  x: number;
+  y: number;
+  floor: number;
+  apId: string;
+  rssiDbm: number;
+  clusterId: number;
+}
+
+export type DensityClusterDensityClass =
+  (typeof DensityClusterDensityClass)[keyof typeof DensityClusterDensityClass];
+
+export const DensityClusterDensityClass = {
+  LOW: "LOW",
+  MEDIUM: "MEDIUM",
+  HIGH: "HIGH",
+} as const;
+
+export interface DensityCluster {
+  id: number;
+  centerX: number;
+  centerY: number;
+  floor: number;
+  userCount: number;
+  densityClass: DensityClusterDensityClass;
+}
+
+export interface SimulationMetrics {
+  apCount: number;
+  userCount: number;
+  coveragePercent: number;
+  /** @nullable */
+  avgRssiDbm: number | null;
+  /** @nullable */
+  minRssiDbm: number | null;
+  /** @nullable */
+  avgBandwidthPerUserMbps: number | null;
+  congestedApCount: number;
+  loadCoefficientOfVariation: number;
+  clusterCount: number;
+}
+
+export interface SimulationResult {
+  apNodes: AccessPointResult[];
+  users: UserPoint[];
+  clusters: DensityCluster[];
+  metrics: SimulationMetrics;
+  loadSuggestions: string[];
+  edgeCount: number;
+  numFloors: number;
+}
+
+export type SimulationRunSourceMode =
+  (typeof SimulationRunSourceMode)[keyof typeof SimulationRunSourceMode];
+
+export const SimulationRunSourceMode = {
+  simulation: "simulation",
+  telemetry: "telemetry",
+} as const;
+
+export interface SimulationRun {
+  id: number;
+  createdAt: string;
+  sourceMode: SimulationRunSourceMode;
+  config: WlanSimulationConfig;
+  result: SimulationResult;
+}
+
+export type SimulationRunSummarySourceMode =
+  (typeof SimulationRunSummarySourceMode)[keyof typeof SimulationRunSummarySourceMode];
+
+export const SimulationRunSummarySourceMode = {
+  simulation: "simulation",
+  telemetry: "telemetry",
+} as const;
+
+export interface SimulationRunSummary {
+  id: number;
+  createdAt: string;
+  sourceMode: SimulationRunSummarySourceMode;
+  apCount: number;
+  userCount: number;
+  coveragePercent: number;
+  /** @nullable */
+  avgRssiDbm: number | null;
+  congestedApCount: number;
+}

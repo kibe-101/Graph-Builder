@@ -5,18 +5,27 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  ApiError,
+  HealthStatus,
+  SimulationRun,
+  SimulationRunInput,
+  SimulationRunSummary,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +108,164 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary List recent simulation runs
+ */
+export const getListSimulationRunsUrl = () => {
+  return `/api/simulation-runs`;
+};
+
+export const listSimulationRuns = async (
+  options?: RequestInit,
+): Promise<SimulationRunSummary[]> => {
+  return customFetch<SimulationRunSummary[]>(getListSimulationRunsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListSimulationRunsQueryKey = () => {
+  return [`/api/simulation-runs`] as const;
+};
+
+export const getListSimulationRunsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listSimulationRuns>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listSimulationRuns>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListSimulationRunsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listSimulationRuns>>
+  > = ({ signal }) => listSimulationRuns({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listSimulationRuns>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListSimulationRunsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listSimulationRuns>>
+>;
+export type ListSimulationRunsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List recent simulation runs
+ */
+
+export function useListSimulationRuns<
+  TData = Awaited<ReturnType<typeof listSimulationRuns>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listSimulationRuns>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListSimulationRunsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Run and save a WLAN analysis
+ */
+export const getCreateSimulationRunUrl = () => {
+  return `/api/simulation-runs`;
+};
+
+export const createSimulationRun = async (
+  simulationRunInput: SimulationRunInput,
+  options?: RequestInit,
+): Promise<SimulationRun> => {
+  return customFetch<SimulationRun>(getCreateSimulationRunUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(simulationRunInput),
+  });
+};
+
+export const getCreateSimulationRunMutationOptions = <
+  TError = ErrorType<ApiError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createSimulationRun>>,
+    TError,
+    { data: BodyType<SimulationRunInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createSimulationRun>>,
+  TError,
+  { data: BodyType<SimulationRunInput> },
+  TContext
+> => {
+  const mutationKey = ["createSimulationRun"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createSimulationRun>>,
+    { data: BodyType<SimulationRunInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createSimulationRun(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateSimulationRunMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createSimulationRun>>
+>;
+export type CreateSimulationRunMutationBody = BodyType<SimulationRunInput>;
+export type CreateSimulationRunMutationError = ErrorType<ApiError>;
+
+/**
+ * @summary Run and save a WLAN analysis
+ */
+export const useCreateSimulationRun = <
+  TError = ErrorType<ApiError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createSimulationRun>>,
+    TError,
+    { data: BodyType<SimulationRunInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createSimulationRun>>,
+  TError,
+  { data: BodyType<SimulationRunInput> },
+  TContext
+> => {
+  return useMutation(getCreateSimulationRunMutationOptions(options));
+};

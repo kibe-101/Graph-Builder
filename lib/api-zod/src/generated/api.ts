@@ -14,3 +14,261 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary List recent simulation runs
+ */
+export const ListSimulationRunsResponseItem = zod.object({
+  id: zod.number(),
+  createdAt: zod.coerce.date(),
+  sourceMode: zod.enum(["simulation", "telemetry"]),
+  apCount: zod.number(),
+  userCount: zod.number(),
+  coveragePercent: zod.number(),
+  avgRssiDbm: zod.number().nullable(),
+  congestedApCount: zod.number(),
+});
+export const ListSimulationRunsResponse = zod.array(
+  ListSimulationRunsResponseItem,
+);
+
+/**
+ * @summary Run and save a WLAN analysis
+ */
+export const createSimulationRunBodyConfigGridWidthMin = 5;
+export const createSimulationRunBodyConfigGridWidthMax = 30;
+
+export const createSimulationRunBodyConfigGridHeightMin = 5;
+export const createSimulationRunBodyConfigGridHeightMax = 30;
+
+export const createSimulationRunBodyConfigSignalRadiusMax = 8;
+
+export const createSimulationRunBodyConfigNumUsersMin = 10;
+export const createSimulationRunBodyConfigNumUsersMax = 500;
+
+export const createSimulationRunBodyConfigApBandwidthMbpsMin = 10;
+export const createSimulationRunBodyConfigApBandwidthMbpsMax = 1000;
+
+export const createSimulationRunBodyConfigCongestionThresholdMin = 0.5;
+export const createSimulationRunBodyConfigCongestionThresholdMax = 1;
+
+export const createSimulationRunBodyConfigMinBandwidthPerUserMin = 0.5;
+export const createSimulationRunBodyConfigMinBandwidthPerUserMax = 20;
+
+export const createSimulationRunBodyConfigRandomSeedMax = 999;
+
+export const createSimulationRunBodyConfigNumFloorsMax = 5;
+
+export const createSimulationRunBodyConfigCellSizeMetersMin = 0.5;
+export const createSimulationRunBodyConfigCellSizeMetersMax = 50;
+
+export const createSimulationRunBodyConfigTransmitPowerDbmMin = 0;
+export const createSimulationRunBodyConfigTransmitPowerDbmMax = 30;
+
+export const createSimulationRunBodyConfigReferencePathLossDbMin = 20;
+export const createSimulationRunBodyConfigReferencePathLossDbMax = 80;
+
+export const createSimulationRunBodyConfigPathLossExponentMax = 6;
+
+export const createSimulationRunBodyConfigFloorPenaltyDbMin = 0;
+export const createSimulationRunBodyConfigFloorPenaltyDbMax = 40;
+
+export const createSimulationRunBodyConfigWallLossDbPerObstructionMin = 0;
+export const createSimulationRunBodyConfigWallLossDbPerObstructionMax = 20;
+
+export const createSimulationRunBodyConfigMinimumRssiDbmMin = -100;
+export const createSimulationRunBodyConfigMinimumRssiDbmMax = -30;
+
+export const createSimulationRunBodyMeasurementsItemApIdMax = 80;
+
+export const createSimulationRunBodyMeasurementsItemApXMin = 0;
+export const createSimulationRunBodyMeasurementsItemApXMax = 29;
+
+export const createSimulationRunBodyMeasurementsItemApYMin = 0;
+export const createSimulationRunBodyMeasurementsItemApYMax = 29;
+
+export const createSimulationRunBodyMeasurementsItemApFloorMin = 0;
+export const createSimulationRunBodyMeasurementsItemApFloorMax = 4;
+
+export const createSimulationRunBodyMeasurementsItemXMin = 0;
+export const createSimulationRunBodyMeasurementsItemXMax = 29;
+
+export const createSimulationRunBodyMeasurementsItemYMin = 0;
+export const createSimulationRunBodyMeasurementsItemYMax = 29;
+
+export const createSimulationRunBodyMeasurementsItemFloorMin = 0;
+export const createSimulationRunBodyMeasurementsItemFloorMax = 4;
+
+export const createSimulationRunBodyMeasurementsItemRssiDbmMin = -120;
+export const createSimulationRunBodyMeasurementsItemRssiDbmMax = 0;
+
+export const createSimulationRunBodyMeasurementsItemThroughputMbpsMin = 0;
+export const createSimulationRunBodyMeasurementsItemThroughputMbpsMax = 10000;
+
+export const createSimulationRunBodyMeasurementsItemChannelUtilizationPercentMin = 0;
+export const createSimulationRunBodyMeasurementsItemChannelUtilizationPercentMax = 100;
+
+export const createSimulationRunBodyMeasurementsItemPacketLossPercentMin = 0;
+export const createSimulationRunBodyMeasurementsItemPacketLossPercentMax = 100;
+
+export const createSimulationRunBodyMeasurementsMax = 5000;
+
+export const createSimulationRunBodyObstructionsItemXMin = 0;
+export const createSimulationRunBodyObstructionsItemXMax = 29;
+
+export const createSimulationRunBodyObstructionsItemYMin = 0;
+export const createSimulationRunBodyObstructionsItemYMax = 29;
+
+export const createSimulationRunBodyObstructionsItemFloorMin = 0;
+export const createSimulationRunBodyObstructionsItemFloorMax = 4;
+
+export const createSimulationRunBodyObstructionsMax = 4500;
+
+export const CreateSimulationRunBody = zod.object({
+  sourceMode: zod.enum(["simulation", "telemetry"]),
+  config: zod.object({
+    gridWidth: zod
+      .number()
+      .min(createSimulationRunBodyConfigGridWidthMin)
+      .max(createSimulationRunBodyConfigGridWidthMax),
+    gridHeight: zod
+      .number()
+      .min(createSimulationRunBodyConfigGridHeightMin)
+      .max(createSimulationRunBodyConfigGridHeightMax),
+    signalRadius: zod
+      .number()
+      .min(1)
+      .max(createSimulationRunBodyConfigSignalRadiusMax),
+    numUsers: zod
+      .number()
+      .min(createSimulationRunBodyConfigNumUsersMin)
+      .max(createSimulationRunBodyConfigNumUsersMax),
+    apBandwidthMbps: zod
+      .number()
+      .min(createSimulationRunBodyConfigApBandwidthMbpsMin)
+      .max(createSimulationRunBodyConfigApBandwidthMbpsMax),
+    congestionThreshold: zod
+      .number()
+      .min(createSimulationRunBodyConfigCongestionThresholdMin)
+      .max(createSimulationRunBodyConfigCongestionThresholdMax),
+    minBandwidthPerUser: zod
+      .number()
+      .min(createSimulationRunBodyConfigMinBandwidthPerUserMin)
+      .max(createSimulationRunBodyConfigMinBandwidthPerUserMax),
+    randomSeed: zod
+      .number()
+      .min(1)
+      .max(createSimulationRunBodyConfigRandomSeedMax),
+    numFloors: zod
+      .number()
+      .min(1)
+      .max(createSimulationRunBodyConfigNumFloorsMax),
+    cellSizeMeters: zod
+      .number()
+      .min(createSimulationRunBodyConfigCellSizeMetersMin)
+      .max(createSimulationRunBodyConfigCellSizeMetersMax),
+    transmitPowerDbm: zod
+      .number()
+      .min(createSimulationRunBodyConfigTransmitPowerDbmMin)
+      .max(createSimulationRunBodyConfigTransmitPowerDbmMax),
+    referencePathLossDb: zod
+      .number()
+      .min(createSimulationRunBodyConfigReferencePathLossDbMin)
+      .max(createSimulationRunBodyConfigReferencePathLossDbMax),
+    pathLossExponent: zod
+      .number()
+      .min(1)
+      .max(createSimulationRunBodyConfigPathLossExponentMax),
+    floorPenaltyDb: zod
+      .number()
+      .min(createSimulationRunBodyConfigFloorPenaltyDbMin)
+      .max(createSimulationRunBodyConfigFloorPenaltyDbMax),
+    wallLossDbPerObstruction: zod
+      .number()
+      .min(createSimulationRunBodyConfigWallLossDbPerObstructionMin)
+      .max(createSimulationRunBodyConfigWallLossDbPerObstructionMax),
+    minimumRssiDbm: zod
+      .number()
+      .min(createSimulationRunBodyConfigMinimumRssiDbmMin)
+      .max(createSimulationRunBodyConfigMinimumRssiDbmMax),
+  }),
+  measurements: zod
+    .array(
+      zod.object({
+        apId: zod
+          .string()
+          .min(1)
+          .max(createSimulationRunBodyMeasurementsItemApIdMax),
+        apX: zod
+          .number()
+          .min(createSimulationRunBodyMeasurementsItemApXMin)
+          .max(createSimulationRunBodyMeasurementsItemApXMax),
+        apY: zod
+          .number()
+          .min(createSimulationRunBodyMeasurementsItemApYMin)
+          .max(createSimulationRunBodyMeasurementsItemApYMax),
+        apFloor: zod
+          .number()
+          .min(createSimulationRunBodyMeasurementsItemApFloorMin)
+          .max(createSimulationRunBodyMeasurementsItemApFloorMax)
+          .nullish(),
+        x: zod
+          .number()
+          .min(createSimulationRunBodyMeasurementsItemXMin)
+          .max(createSimulationRunBodyMeasurementsItemXMax),
+        y: zod
+          .number()
+          .min(createSimulationRunBodyMeasurementsItemYMin)
+          .max(createSimulationRunBodyMeasurementsItemYMax),
+        floor: zod
+          .number()
+          .min(createSimulationRunBodyMeasurementsItemFloorMin)
+          .max(createSimulationRunBodyMeasurementsItemFloorMax),
+        rssiDbm: zod
+          .number()
+          .min(createSimulationRunBodyMeasurementsItemRssiDbmMin)
+          .max(createSimulationRunBodyMeasurementsItemRssiDbmMax)
+          .nullish(),
+        throughputMbps: zod
+          .number()
+          .min(createSimulationRunBodyMeasurementsItemThroughputMbpsMin)
+          .max(createSimulationRunBodyMeasurementsItemThroughputMbpsMax)
+          .nullish(),
+        channelUtilizationPercent: zod
+          .number()
+          .min(
+            createSimulationRunBodyMeasurementsItemChannelUtilizationPercentMin,
+          )
+          .max(
+            createSimulationRunBodyMeasurementsItemChannelUtilizationPercentMax,
+          )
+          .nullish(),
+        packetLossPercent: zod
+          .number()
+          .min(createSimulationRunBodyMeasurementsItemPacketLossPercentMin)
+          .max(createSimulationRunBodyMeasurementsItemPacketLossPercentMax)
+          .nullish(),
+      }),
+    )
+    .max(createSimulationRunBodyMeasurementsMax)
+    .optional(),
+  obstructions: zod
+    .array(
+      zod.object({
+        x: zod
+          .number()
+          .min(createSimulationRunBodyObstructionsItemXMin)
+          .max(createSimulationRunBodyObstructionsItemXMax),
+        y: zod
+          .number()
+          .min(createSimulationRunBodyObstructionsItemYMin)
+          .max(createSimulationRunBodyObstructionsItemYMax),
+        floor: zod
+          .number()
+          .min(createSimulationRunBodyObstructionsItemFloorMin)
+          .max(createSimulationRunBodyObstructionsItemFloorMax),
+      }),
+    )
+    .max(createSimulationRunBodyObstructionsMax)
+    .optional(),
+});

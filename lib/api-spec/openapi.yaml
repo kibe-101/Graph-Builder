@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: simulations
+    description: WLAN simulation and evaluation operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,49 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /simulation-runs:
+    get:
+      operationId: listSimulationRuns
+      tags: [simulations]
+      summary: List recent simulation runs
+      responses:
+        "200":
+          description: Recent simulation summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SimulationRunSummary"
+    post:
+      operationId: createSimulationRun
+      tags: [simulations]
+      summary: Run and save a WLAN analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimulationRunInput"
+      responses:
+        "201":
+          description: Simulation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationRun"
+        "400":
+          description: Invalid simulation configuration or telemetry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500":
+          description: Simulation engine failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +78,213 @@ components:
           type: string
       required:
         - status
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    WlanSimulationConfig:
+      type: object
+      properties:
+        gridWidth: { type: integer, minimum: 5, maximum: 30 }
+        gridHeight: { type: integer, minimum: 5, maximum: 30 }
+        signalRadius: { type: number, minimum: 1, maximum: 8 }
+        numUsers: { type: integer, minimum: 10, maximum: 500 }
+        apBandwidthMbps: { type: number, minimum: 10, maximum: 1000 }
+        congestionThreshold: { type: number, minimum: 0.5, maximum: 1 }
+        minBandwidthPerUser: { type: number, minimum: 0.5, maximum: 20 }
+        randomSeed: { type: integer, minimum: 1, maximum: 999 }
+        numFloors: { type: integer, minimum: 1, maximum: 5 }
+        cellSizeMeters: { type: number, minimum: 0.5, maximum: 50 }
+        transmitPowerDbm: { type: number, minimum: 0, maximum: 30 }
+        referencePathLossDb: { type: number, minimum: 20, maximum: 80 }
+        pathLossExponent: { type: number, minimum: 1, maximum: 6 }
+        floorPenaltyDb: { type: number, minimum: 0, maximum: 40 }
+        wallLossDbPerObstruction: { type: number, minimum: 0, maximum: 20 }
+        minimumRssiDbm: { type: number, minimum: -100, maximum: -30 }
+      required:
+        - gridWidth
+        - gridHeight
+        - signalRadius
+        - numUsers
+        - apBandwidthMbps
+        - congestionThreshold
+        - minBandwidthPerUser
+        - randomSeed
+        - numFloors
+        - cellSizeMeters
+        - transmitPowerDbm
+        - referencePathLossDb
+        - pathLossExponent
+        - floorPenaltyDb
+        - wallLossDbPerObstruction
+        - minimumRssiDbm
+    ObstructionCell:
+      type: object
+      properties:
+        x: { type: integer, minimum: 0, maximum: 29 }
+        y: { type: integer, minimum: 0, maximum: 29 }
+        floor: { type: integer, minimum: 0, maximum: 4 }
+      required: [x, y, floor]
+    UserMeasurement:
+      type: object
+      properties:
+        apId: { type: string, minLength: 1, maxLength: 80 }
+        apX: { type: number, minimum: 0, maximum: 29 }
+        apY: { type: number, minimum: 0, maximum: 29 }
+        apFloor: { type: ["integer", "null"], minimum: 0, maximum: 4 }
+        x: { type: number, minimum: 0, maximum: 29 }
+        y: { type: number, minimum: 0, maximum: 29 }
+        floor: { type: integer, minimum: 0, maximum: 4 }
+        rssiDbm: { type: ["number", "null"], minimum: -120, maximum: 0 }
+        throughputMbps: { type: ["number", "null"], minimum: 0, maximum: 10000 }
+        channelUtilizationPercent: { type: ["number", "null"], minimum: 0, maximum: 100 }
+        packetLossPercent: { type: ["number", "null"], minimum: 0, maximum: 100 }
+      required: [apId, apX, apY, x, y, floor]
+    SimulationRunInput:
+      type: object
+      properties:
+        sourceMode:
+          type: string
+          enum: [simulation, telemetry]
+        config:
+          $ref: "#/components/schemas/WlanSimulationConfig"
+        measurements:
+          type: array
+          maxItems: 5000
+          items:
+            $ref: "#/components/schemas/UserMeasurement"
+        obstructions:
+          type: array
+          maxItems: 4500
+          items:
+            $ref: "#/components/schemas/ObstructionCell"
+      required: [sourceMode, config]
+    AccessPointResult:
+      type: object
+      properties:
+        id: { type: string }
+        x: { type: number }
+        y: { type: number }
+        floor: { type: integer }
+        userCount: { type: integer }
+        avgRssiDbm: { type: ["number", "null"] }
+        densityClass:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+        bandwidthPerUserMbps: { type: ["number", "null"] }
+        congested: { type: boolean }
+      required:
+        - id
+        - x
+        - y
+        - floor
+        - userCount
+        - avgRssiDbm
+        - densityClass
+        - bandwidthPerUserMbps
+        - congested
+    UserPoint:
+      type: object
+      properties:
+        x: { type: number }
+        y: { type: number }
+        floor: { type: integer }
+        apId: { type: string }
+        rssiDbm: { type: number }
+        clusterId: { type: integer }
+      required: [x, y, floor, apId, rssiDbm, clusterId]
+    DensityCluster:
+      type: object
+      properties:
+        id: { type: integer }
+        centerX: { type: number }
+        centerY: { type: number }
+        floor: { type: integer }
+        userCount: { type: integer }
+        densityClass:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+      required: [id, centerX, centerY, floor, userCount, densityClass]
+    SimulationMetrics:
+      type: object
+      properties:
+        apCount: { type: integer }
+        userCount: { type: integer }
+        coveragePercent: { type: number }
+        avgRssiDbm: { type: ["number", "null"] }
+        minRssiDbm: { type: ["number", "null"] }
+        avgBandwidthPerUserMbps: { type: ["number", "null"] }
+        congestedApCount: { type: integer }
+        loadCoefficientOfVariation: { type: number }
+        clusterCount: { type: integer }
+      required:
+        - apCount
+        - userCount
+        - coveragePercent
+        - avgRssiDbm
+        - minRssiDbm
+        - avgBandwidthPerUserMbps
+        - congestedApCount
+        - loadCoefficientOfVariation
+        - clusterCount
+    SimulationResult:
+      type: object
+      properties:
+        apNodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccessPointResult"
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserPoint"
+        clusters:
+          type: array
+          items:
+            $ref: "#/components/schemas/DensityCluster"
+        metrics:
+          $ref: "#/components/schemas/SimulationMetrics"
+        loadSuggestions:
+          type: array
+          items: { type: string }
+        edgeCount: { type: integer }
+        numFloors: { type: integer }
+      required: [apNodes, users, clusters, metrics, loadSuggestions, edgeCount, numFloors]
+    SimulationRun:
+      type: object
+      properties:
+        id: { type: integer }
+        createdAt: { type: string, format: date-time }
+        sourceMode:
+          type: string
+          enum: [simulation, telemetry]
+        config:
+          $ref: "#/components/schemas/WlanSimulationConfig"
+        result:
+          $ref: "#/components/schemas/SimulationResult"
+      required: [id, createdAt, sourceMode, config, result]
+    SimulationRunSummary:
+      type: object
+      properties:
+        id: { type: integer }
+        createdAt: { type: string, format: date-time }
+        sourceMode:
+          type: string
+          enum: [simulation, telemetry]
+        apCount: { type: integer }
+        userCount: { type: integer }
+        coveragePercent: { type: number }
+        avgRssiDbm: { type: ["number", "null"] }
+        congestedApCount: { type: integer }
+      required:
+        - id
+        - createdAt
+        - sourceMode
+        - apCount
+        - userCount
+        - coveragePercent
+        - avgRssiDbm
+        - congestedApCount
 
