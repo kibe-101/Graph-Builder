@@ -18,6 +18,12 @@ import { z } from "zod";
 const router: IRouter = Router();
 const MAX_PYTHON_OUTPUT_BYTES = 8 * 1024 * 1024;
 
+const loadSnapshotSchema = z.object({
+  loadCoefficientOfVariation: z.number().min(0),
+  congestedApCount: z.number().int(),
+  maxApUsers: z.number().int(),
+});
+
 const runResultSchema = z.object({
   apNodes: z.array(
     z.object({
@@ -30,6 +36,7 @@ const runResultSchema = z.object({
       densityClass: z.enum(["LOW", "MEDIUM", "HIGH"]),
       bandwidthPerUserMbps: z.number().nullable(),
       congested: z.boolean(),
+      channel: z.number().int(),
     }),
   ),
   users: z.array(
@@ -39,6 +46,7 @@ const runResultSchema = z.object({
       floor: z.number().int(),
       apId: z.string(),
       rssiDbm: z.number(),
+      sinrDb: z.number(),
       clusterId: z.number().int(),
     }),
   ),
@@ -50,6 +58,8 @@ const runResultSchema = z.object({
       floor: z.number().int(),
       userCount: z.number().int(),
       densityClass: z.enum(["LOW", "MEDIUM", "HIGH"]),
+      radiusMeters: z.number(),
+      usersPer100Sqm: z.number(),
     }),
   ),
   metrics: z.object({
@@ -62,8 +72,31 @@ const runResultSchema = z.object({
     congestedApCount: z.number().int(),
     loadCoefficientOfVariation: z.number().min(0),
     clusterCount: z.number().int(),
+    silhouetteScore: z.number().nullable(),
+    avgSinrDb: z.number().nullable(),
+    minSinrDb: z.number().nullable(),
+    coChannelConflicts: z.number().int(),
+    obstructionCount: z.number().int(),
   }),
   loadSuggestions: z.array(z.string()),
+  loadBalancing: z.object({
+    movedUsers: z.number().int(),
+    loadLimitUsers: z.number().int(),
+    before: loadSnapshotSchema,
+    after: loadSnapshotSchema,
+    apUserCountsAfter: z.record(z.string(), z.number().int()),
+    reassignments: z.array(
+      z.object({
+        fromApId: z.string(),
+        toApId: z.string(),
+        x: z.number(),
+        y: z.number(),
+        floor: z.number().int(),
+        rssiBeforeDbm: z.number(),
+        rssiAfterDbm: z.number(),
+      }),
+    ),
+  }),
   edgeCount: z.number().int(),
   numFloors: z.number().int(),
 });

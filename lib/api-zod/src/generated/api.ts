@@ -13,6 +13,7 @@ import * as zod from "zod";
  */
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
+  database: zod.enum(["connected", "unavailable"]).optional(),
 });
 
 /**
@@ -78,6 +79,17 @@ export const createSimulationRunBodyConfigWallLossDbPerObstructionMax = 20;
 
 export const createSimulationRunBodyConfigMinimumRssiDbmMin = -100;
 export const createSimulationRunBodyConfigMinimumRssiDbmMax = -30;
+
+export const createSimulationRunBodyConfigKmeansClustersMin = 0;
+export const createSimulationRunBodyConfigKmeansClustersMax = 8;
+
+export const createSimulationRunBodyConfigShadowFadingStdDbMin = 0;
+export const createSimulationRunBodyConfigShadowFadingStdDbMax = 12;
+
+export const createSimulationRunBodyConfigNoiseFloorDbmMin = -110;
+export const createSimulationRunBodyConfigNoiseFloorDbmMax = -70;
+
+export const createSimulationRunBodyConfigChannelCountMax = 13;
 
 export const createSimulationRunBodyMeasurementsItemApIdMax = 80;
 
@@ -191,6 +203,33 @@ export const CreateSimulationRunBody = zod.object({
       .number()
       .min(createSimulationRunBodyConfigMinimumRssiDbmMin)
       .max(createSimulationRunBodyConfigMinimumRssiDbmMax),
+    kmeansClusters: zod
+      .number()
+      .min(createSimulationRunBodyConfigKmeansClustersMin)
+      .max(createSimulationRunBodyConfigKmeansClustersMax)
+      .optional()
+      .describe("Number of K-Means clusters; 0 selects k by silhouette score."),
+    userDistribution: zod
+      .enum(["uniform", "hotspots"])
+      .optional()
+      .describe("How simulated users are placed. Ignored for telemetry."),
+    shadowFadingStdDb: zod
+      .number()
+      .min(createSimulationRunBodyConfigShadowFadingStdDbMin)
+      .max(createSimulationRunBodyConfigShadowFadingStdDbMax)
+      .optional()
+      .describe("Standard deviation of seeded log-normal shadow fading."),
+    noiseFloorDbm: zod
+      .number()
+      .min(createSimulationRunBodyConfigNoiseFloorDbmMin)
+      .max(createSimulationRunBodyConfigNoiseFloorDbmMax)
+      .optional(),
+    channelCount: zod
+      .number()
+      .min(1)
+      .max(createSimulationRunBodyConfigChannelCountMax)
+      .optional()
+      .describe("Channels available to the AP channel plan (3 = 1\/6\/11)."),
   }),
   measurements: zod
     .array(

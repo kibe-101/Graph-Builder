@@ -76,6 +76,9 @@ components:
       properties:
         status:
           type: string
+        database:
+          type: string
+          enum: [connected, unavailable]
       required:
         - status
     ApiError:
@@ -103,6 +106,26 @@ components:
         floorPenaltyDb: { type: number, minimum: 0, maximum: 40 }
         wallLossDbPerObstruction: { type: number, minimum: 0, maximum: 20 }
         minimumRssiDbm: { type: number, minimum: -100, maximum: -30 }
+        kmeansClusters:
+          type: integer
+          minimum: 0
+          maximum: 8
+          description: Number of K-Means clusters; 0 selects k by silhouette score.
+        userDistribution:
+          type: string
+          enum: [uniform, hotspots]
+          description: How simulated users are placed. Ignored for telemetry.
+        shadowFadingStdDb:
+          type: number
+          minimum: 0
+          maximum: 12
+          description: Standard deviation of seeded log-normal shadow fading.
+        noiseFloorDbm: { type: number, minimum: -110, maximum: -70 }
+        channelCount:
+          type: integer
+          minimum: 1
+          maximum: 13
+          description: Channels available to the AP channel plan (3 = 1/6/11).
       required:
         - gridWidth
         - gridHeight
@@ -175,6 +198,7 @@ components:
           enum: [LOW, MEDIUM, HIGH]
         bandwidthPerUserMbps: { type: ["number", "null"] }
         congested: { type: boolean }
+        channel: { type: integer }
       required:
         - id
         - x
@@ -185,6 +209,7 @@ components:
         - densityClass
         - bandwidthPerUserMbps
         - congested
+        - channel
     UserPoint:
       type: object
       properties:
@@ -193,8 +218,9 @@ components:
         floor: { type: integer }
         apId: { type: string }
         rssiDbm: { type: number }
+        sinrDb: { type: number }
         clusterId: { type: integer }
-      required: [x, y, floor, apId, rssiDbm, clusterId]
+      required: [x, y, floor, apId, rssiDbm, sinrDb, clusterId]
     DensityCluster:
       type: object
       properties:
@@ -206,7 +232,9 @@ components:
         densityClass:
           type: string
           enum: [LOW, MEDIUM, HIGH]
-      required: [id, centerX, centerY, floor, userCount, densityClass]
+        radiusMeters: { type: number }
+        usersPer100Sqm: { type: number }
+      required: [id, centerX, centerY, floor, userCount, densityClass, radiusMeters, usersPer100Sqm]
     SimulationMetrics:
       type: object
       properties:
@@ -219,6 +247,11 @@ components:
         congestedApCount: { type: integer }
         loadCoefficientOfVariation: { type: number }
         clusterCount: { type: integer }
+        silhouetteScore: { type: ["number", "null"] }
+        avgSinrDb: { type: ["number", "null"] }
+        minSinrDb: { type: ["number", "null"] }
+        coChannelConflicts: { type: integer }
+        obstructionCount: { type: integer }
       required:
         - apCount
         - userCount
@@ -229,6 +262,47 @@ components:
         - congestedApCount
         - loadCoefficientOfVariation
         - clusterCount
+        - silhouetteScore
+        - avgSinrDb
+        - minSinrDb
+        - coChannelConflicts
+        - obstructionCount
+    LoadSnapshot:
+      type: object
+      properties:
+        loadCoefficientOfVariation: { type: number }
+        congestedApCount: { type: integer }
+        maxApUsers: { type: integer }
+      required: [loadCoefficientOfVariation, congestedApCount, maxApUsers]
+    UserReassignment:
+      type: object
+      properties:
+        fromApId: { type: string }
+        toApId: { type: string }
+        x: { type: number }
+        y: { type: number }
+        floor: { type: integer }
+        rssiBeforeDbm: { type: number }
+        rssiAfterDbm: { type: number }
+      required: [fromApId, toApId, x, y, floor, rssiBeforeDbm, rssiAfterDbm]
+    LoadBalancingResult:
+      type: object
+      description: Load balancing applied inside the model. No live AP or client is changed.
+      properties:
+        movedUsers: { type: integer }
+        loadLimitUsers: { type: integer }
+        before:
+          $ref: "#/components/schemas/LoadSnapshot"
+        after:
+          $ref: "#/components/schemas/LoadSnapshot"
+        apUserCountsAfter:
+          type: object
+          additionalProperties: { type: integer }
+        reassignments:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserReassignment"
+      required: [movedUsers, loadLimitUsers, before, after, apUserCountsAfter, reassignments]
     SimulationResult:
       type: object
       properties:
@@ -249,9 +323,11 @@ components:
         loadSuggestions:
           type: array
           items: { type: string }
+        loadBalancing:
+          $ref: "#/components/schemas/LoadBalancingResult"
         edgeCount: { type: integer }
         numFloors: { type: integer }
-      required: [apNodes, users, clusters, metrics, loadSuggestions, edgeCount, numFloors]
+      required: [apNodes, users, clusters, metrics, loadSuggestions, loadBalancing, edgeCount, numFloors]
     SimulationRun:
       type: object
       properties:

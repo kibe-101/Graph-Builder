@@ -19,4 +19,12 @@ export interface SimulationMetrics {
   congestedApCount: number;
   loadCoefficientOfVariation: number;
   clusterCount: number;
+  /** @nullable */
+  silhouetteScore: number | null;
+  /** @nullable */
+  avgSinrDb: number | null;
+  /** @nullable */
+  minSinrDb: number | null;
+  coChannelConflicts: number;
+  obstructionCount: number;
 }

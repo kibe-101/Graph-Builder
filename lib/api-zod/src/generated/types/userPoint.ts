@@ -12,5 +12,6 @@ export interface UserPoint {
   floor: number;
   apId: string;
   rssiDbm: number;
+  sinrDb: number;
   clusterId: number;
 }

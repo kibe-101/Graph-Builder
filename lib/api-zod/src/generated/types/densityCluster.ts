@@ -14,4 +14,6 @@ export interface DensityCluster {
   floor: number;
   userCount: number;
   densityClass: DensityClusterDensityClass;
+  radiusMeters: number;
+  usersPer100Sqm: number;
 }

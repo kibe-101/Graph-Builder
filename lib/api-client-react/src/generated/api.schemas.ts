@@ -5,13 +5,33 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type HealthStatusDatabase =
+  (typeof HealthStatusDatabase)[keyof typeof HealthStatusDatabase];
+
+export const HealthStatusDatabase = {
+  connected: "connected",
+  unavailable: "unavailable",
+} as const;
+
 export interface HealthStatus {
   status: string;
+  database?: HealthStatusDatabase;
 }
 
 export interface ApiError {
   error: string;
 }
+
+/**
+ * How simulated users are placed. Ignored for telemetry.
+ */
+export type WlanSimulationConfigUserDistribution =
+  (typeof WlanSimulationConfigUserDistribution)[keyof typeof WlanSimulationConfigUserDistribution];
+
+export const WlanSimulationConfigUserDistribution = {
+  uniform: "uniform",
+  hotspots: "hotspots",
+} as const;
 
 export interface WlanSimulationConfig {
   /**
@@ -94,6 +114,31 @@ export interface WlanSimulationConfig {
    * @maximum -30
    */
   minimumRssiDbm: number;
+  /**
+   * Number of K-Means clusters; 0 selects k by silhouette score.
+   * @minimum 0
+   * @maximum 8
+   */
+  kmeansClusters?: number;
+  /** How simulated users are placed. Ignored for telemetry. */
+  userDistribution?: WlanSimulationConfigUserDistribution;
+  /**
+   * Standard deviation of seeded log-normal shadow fading.
+   * @minimum 0
+   * @maximum 12
+   */
+  shadowFadingStdDb?: number;
+  /**
+   * @minimum -110
+   * @maximum -70
+   */
+  noiseFloorDbm?: number;
+  /**
+   * Channels available to the AP channel plan (3 = 1/6/11).
+   * @minimum 1
+   * @maximum 13
+   */
+  channelCount?: number;
 }
 
 export interface ObstructionCell {
@@ -215,6 +260,7 @@ export interface AccessPointResult {
   /** @nullable */
   bandwidthPerUserMbps: number | null;
   congested: boolean;
+  channel: number;
 }
 
 export interface UserPoint {
@@ -223,6 +269,7 @@ export interface UserPoint {
   floor: number;
   apId: string;
   rssiDbm: number;
+  sinrDb: number;
   clusterId: number;
 }
 
@@ -242,6 +289,8 @@ export interface DensityCluster {
   floor: number;
   userCount: number;
   densityClass: DensityClusterDensityClass;
+  radiusMeters: number;
+  usersPer100Sqm: number;
 }
 
 export interface SimulationMetrics {
@@ -257,6 +306,44 @@ export interface SimulationMetrics {
   congestedApCount: number;
   loadCoefficientOfVariation: number;
   clusterCount: number;
+  /** @nullable */
+  silhouetteScore: number | null;
+  /** @nullable */
+  avgSinrDb: number | null;
+  /** @nullable */
+  minSinrDb: number | null;
+  coChannelConflicts: number;
+  obstructionCount: number;
+}
+
+export interface LoadSnapshot {
+  loadCoefficientOfVariation: number;
+  congestedApCount: number;
+  maxApUsers: number;
+}
+
+export interface UserReassignment {
+  fromApId: string;
+  toApId: string;
+  x: number;
+  y: number;
+  floor: number;
+  rssiBeforeDbm: number;
+  rssiAfterDbm: number;
+}
+
+export type LoadBalancingResultApUserCountsAfter = { [key: string]: number };
+
+/**
+ * Load balancing applied inside the model. No live AP or client is changed.
+ */
+export interface LoadBalancingResult {
+  movedUsers: number;
+  loadLimitUsers: number;
+  before: LoadSnapshot;
+  after: LoadSnapshot;
+  apUserCountsAfter: LoadBalancingResultApUserCountsAfter;
+  reassignments: UserReassignment[];
 }
 
 export interface SimulationResult {
@@ -265,6 +352,7 @@ export interface SimulationResult {
   clusters: DensityCluster[];
   metrics: SimulationMetrics;
   loadSuggestions: string[];
+  loadBalancing: LoadBalancingResult;
   edgeCount: number;
   numFloors: number;
 }

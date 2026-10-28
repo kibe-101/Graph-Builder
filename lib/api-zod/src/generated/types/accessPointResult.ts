@@ -19,4 +19,5 @@ export interface AccessPointResult {
   /** @nullable */
   bandwidthPerUserMbps: number | null;
   congested: boolean;
+  channel: number;
 }

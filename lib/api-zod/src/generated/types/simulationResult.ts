@@ -7,6 +7,7 @@
  */
 import type { AccessPointResult } from "./accessPointResult";
 import type { DensityCluster } from "./densityCluster";
+import type { LoadBalancingResult } from "./loadBalancingResult";
 import type { SimulationMetrics } from "./simulationMetrics";
 import type { UserPoint } from "./userPoint";
 
@@ -16,6 +17,7 @@ export interface SimulationResult {
   clusters: DensityCluster[];
   metrics: SimulationMetrics;
   loadSuggestions: string[];
+  loadBalancing: LoadBalancingResult;
   edgeCount: number;
   numFloors: number;
 }

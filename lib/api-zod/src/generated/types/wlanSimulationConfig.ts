@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { WlanSimulationConfigUserDistribution } from "./wlanSimulationConfigUserDistribution";
 
 export interface WlanSimulationConfig {
   /**
@@ -87,4 +88,29 @@ export interface WlanSimulationConfig {
    * @maximum -30
    */
   minimumRssiDbm: number;
+  /**
+   * Number of K-Means clusters; 0 selects k by silhouette score.
+   * @minimum 0
+   * @maximum 8
+   */
+  kmeansClusters?: number;
+  /** How simulated users are placed. Ignored for telemetry. */
+  userDistribution?: WlanSimulationConfigUserDistribution;
+  /**
+   * Standard deviation of seeded log-normal shadow fading.
+   * @minimum 0
+   * @maximum 12
+   */
+  shadowFadingStdDb?: number;
+  /**
+   * @minimum -110
+   * @maximum -70
+   */
+  noiseFloorDbm?: number;
+  /**
+   * Channels available to the AP channel plan (3 = 1/6/11).
+   * @minimum 1
+   * @maximum 13
+   */
+  channelCount?: number;
 }

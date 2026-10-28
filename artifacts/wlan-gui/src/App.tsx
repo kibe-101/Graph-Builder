@@ -1,43 +1,88 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Activity, AlertTriangle, ArrowDownToLine, Check, ChevronDown, CircleHelp,
-  FileImage, FileSpreadsheet, Layers3, MapPinned, Play, Radio, RotateCcw,
+  Activity, AlertTriangle, ArrowDownToLine, BrickWall, Check, ChevronDown, CircleHelp,
+  Eraser, FileImage, FileSpreadsheet, Layers3, MapPinned, Pencil, Play, Radio, RotateCcw,
   Settings2, ShieldCheck, Signal, Upload, Wifi,
 } from "lucide-react";
 import {
-  getListSimulationRunsQueryKey, useCreateSimulationRun, useListSimulationRuns,
+  getHealthCheckQueryKey, getListSimulationRunsQueryKey, useCreateSimulationRun,
+  useHealthCheck, useListSimulationRuns,
 } from "@workspace/api-client-react";
 import type {
-  SimulationRun, SimulationRunInput, UserMeasurement, WlanSimulationConfig,
+  ObstructionCell, SimulationRun, SimulationRunInput, UserMeasurement, WlanSimulationConfig,
 } from "@workspace/api-client-react";
 import RunCanvas from "./RunCanvas";
 
-const DEFAULT_CONFIG: WlanSimulationConfig = {
+const DEFAULT_CONFIG: Required<WlanSimulationConfig> = {
   gridWidth: 20, gridHeight: 20, signalRadius: 3, numUsers: 100,
   apBandwidthMbps: 100, congestionThreshold: 0.8, minBandwidthPerUser: 1,
   randomSeed: 42, numFloors: 1, cellSizeMeters: 5, transmitPowerDbm: 20,
   referencePathLossDb: 40, pathLossExponent: 3, floorPenaltyDb: 15, minimumRssiDbm: -75,
-  wallLossDbPerObstruction: 5,
+  wallLossDbPerObstruction: 5, kmeansClusters: 0, userDistribution: "uniform",
+  shadowFadingStdDb: 0, noiseFloorDbm: -95, channelCount: 3,
 };
 
-const CONFIG_FIELDS: Array<{ key: keyof WlanSimulationConfig; label: string; min: number; max: number; step: number; unit?: string }> = [
-  { key: "gridWidth", label: "Grid width", min: 5, max: 30, step: 1, unit: " cells" },
-  { key: "gridHeight", label: "Grid height", min: 5, max: 30, step: 1, unit: " cells" },
-  { key: "signalRadius", label: "Signal radius", min: 1, max: 8, step: 0.5, unit: " cells" },
-  { key: "numFloors", label: "Floors", min: 1, max: 5, step: 1 },
-  { key: "numUsers", label: "Simulated users", min: 10, max: 500, step: 10 },
-  { key: "randomSeed", label: "Random seed", min: 1, max: 999, step: 1 },
-  { key: "cellSizeMeters", label: "Cell size", min: 0.5, max: 50, step: 0.5, unit: " m" },
-  { key: "apBandwidthMbps", label: "AP capacity", min: 10, max: 1000, step: 10, unit: " Mbps" },
-  { key: "minBandwidthPerUser", label: "Target per user", min: 0.5, max: 20, step: 0.5, unit: " Mbps" },
-  { key: "congestionThreshold", label: "Congestion threshold", min: 50, max: 100, step: 5, unit: " %" },
-  { key: "transmitPowerDbm", label: "Transmit power", min: 0, max: 30, step: 1, unit: " dBm" },
-  { key: "referencePathLossDb", label: "Reference path loss", min: 20, max: 80, step: 1, unit: " dB" },
-  { key: "pathLossExponent", label: "Path-loss exponent", min: 1, max: 6, step: 0.1 },
-  { key: "floorPenaltyDb", label: "Floor penetration", min: 0, max: 40, step: 1, unit: " dB" },
-  { key: "minimumRssiDbm", label: "Minimum RSSI", min: -100, max: -30, step: 1, unit: " dBm" },
+type VenueConfig = Required<WlanSimulationConfig>;
+type NumericConfigKey = { [K in keyof VenueConfig]: VenueConfig[K] extends number ? K : never }[keyof VenueConfig];
+
+const CONFIG_FIELDS: Array<{ key: NumericConfigKey; label: string; min: number; max: number; step: number; unit?: string; group: "venue" | "radio" }> = [
+  { key: "gridWidth", label: "Grid width", min: 5, max: 30, step: 1, unit: " cells", group: "venue" },
+  { key: "gridHeight", label: "Grid height", min: 5, max: 30, step: 1, unit: " cells", group: "venue" },
+  { key: "signalRadius", label: "Signal radius", min: 1, max: 8, step: 0.5, unit: " cells", group: "venue" },
+  { key: "numFloors", label: "Floors", min: 1, max: 5, step: 1, group: "venue" },
+  { key: "numUsers", label: "Simulated users", min: 10, max: 500, step: 10, group: "venue" },
+  { key: "randomSeed", label: "Random seed", min: 1, max: 999, step: 1, group: "venue" },
+  { key: "kmeansClusters", label: "K-means clusters", min: 0, max: 8, step: 1, group: "venue" },
+  { key: "cellSizeMeters", label: "Cell size", min: 0.5, max: 50, step: 0.5, unit: " m", group: "radio" },
+  { key: "apBandwidthMbps", label: "AP capacity", min: 10, max: 1000, step: 10, unit: " Mbps", group: "radio" },
+  { key: "minBandwidthPerUser", label: "Target per user", min: 0.5, max: 20, step: 0.5, unit: " Mbps", group: "radio" },
+  { key: "congestionThreshold", label: "Congestion threshold", min: 50, max: 100, step: 5, unit: " %", group: "radio" },
+  { key: "transmitPowerDbm", label: "Transmit power", min: 0, max: 30, step: 1, unit: " dBm", group: "radio" },
+  { key: "referencePathLossDb", label: "Reference path loss", min: 20, max: 80, step: 1, unit: " dB", group: "radio" },
+  { key: "pathLossExponent", label: "Path-loss exponent", min: 1, max: 6, step: 0.1, group: "radio" },
+  { key: "floorPenaltyDb", label: "Floor penetration", min: 0, max: 40, step: 1, unit: " dB", group: "radio" },
+  { key: "wallLossDbPerObstruction", label: "Wall loss", min: 0, max: 20, step: 1, unit: " dB", group: "radio" },
+  { key: "shadowFadingStdDb", label: "Shadow fading σ", min: 0, max: 12, step: 0.5, unit: " dB", group: "radio" },
+  { key: "noiseFloorDbm", label: "Noise floor", min: -110, max: -70, step: 1, unit: " dBm", group: "radio" },
+  { key: "channelCount", label: "Channels", min: 1, max: 13, step: 1, group: "radio" },
+  { key: "minimumRssiDbm", label: "Minimum RSSI", min: -100, max: -30, step: 1, unit: " dBm", group: "radio" },
 ];
+
+interface VenueLayout {
+  version: 1;
+  gridWidth: number;
+  gridHeight: number;
+  numFloors: number;
+  cellSizeMeters: number;
+  obstructions: ObstructionCell[];
+}
+
+function parseLayoutJson(text: string): VenueLayout {
+  let data: unknown;
+  try { data = JSON.parse(text); } catch { throw new Error("The layout file is not valid JSON."); }
+  if (typeof data !== "object" || data === null) throw new Error("The layout file must contain a JSON object.");
+  const layout = data as Record<string, unknown>;
+  const whole = (key: string, min: number, max: number): number => {
+    const value = layout[key];
+    if (typeof value !== "number" || !Number.isInteger(value) || value < min || value > max) throw new Error(`Layout ${key} must be a whole number from ${min} to ${max}.`);
+    return value;
+  };
+  const gridWidth = whole("gridWidth", 5, 30), gridHeight = whole("gridHeight", 5, 30), numFloors = whole("numFloors", 1, 5);
+  const cellSizeMeters = layout.cellSizeMeters;
+  if (typeof cellSizeMeters !== "number" || cellSizeMeters < 0.5 || cellSizeMeters > 50) throw new Error("Layout cellSizeMeters must be from 0.5 to 50.");
+  if (!Array.isArray(layout.obstructions)) throw new Error("Layout obstructions must be a list of {x, y, floor} cells.");
+  if (layout.obstructions.length > 4500) throw new Error("A layout is limited to 4,500 wall cells.");
+  const seen = new Set<string>();
+  const obstructions = layout.obstructions.map((cell, index) => {
+    const { x, y, floor } = (cell ?? {}) as Record<string, unknown>;
+    if (![x, y, floor].every(value => typeof value === "number" && Number.isInteger(value))) throw new Error(`Wall ${index + 1} needs whole-number x, y and floor.`);
+    const wall = { x: x as number, y: y as number, floor: floor as number };
+    if (wall.x < 0 || wall.x >= gridWidth || wall.y < 0 || wall.y >= gridHeight || wall.floor < 0 || wall.floor >= numFloors) throw new Error(`Wall ${index + 1} is outside the layout grid.`);
+    return wall;
+  }).filter(wall => { const key = `${wall.x},${wall.y},${wall.floor}`; if (seen.has(key)) return false; seen.add(key); return true; });
+  return { version: 1, gridWidth, gridHeight, numFloors, cellSizeMeters, obstructions };
+}
 
 const REQUIRED_COLUMNS = ["apId", "apX", "apY", "x", "y", "floor"];
 const OPTIONAL_COLUMNS = ["rssiDbm", "throughputMbps", "channelUtilizationPercent", "packetLossPercent"];
@@ -120,7 +165,10 @@ function MiniStat({ value, label }: { value: string; label: string }) {
 
 function App() {
   const queryClient = useQueryClient();
-  const [config, setConfig] = useState<WlanSimulationConfig>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<VenueConfig>(DEFAULT_CONFIG);
+  const [obstructions, setObstructions] = useState<ObstructionCell[]>([]);
+  const [editingWalls, setEditingWalls] = useState(false);
+  const [layoutError, setLayoutError] = useState("");
   const [sourceMode, setSourceMode] = useState<"simulation" | "telemetry">("simulation");
   const [measurements, setMeasurements] = useState<UserMeasurement[]>([]);
   const [csvName, setCsvName] = useState("");
@@ -133,16 +181,53 @@ function App() {
   const [formError, setFormError] = useState("");
   const createRun = useCreateSimulationRun();
   const recentRuns = useListSimulationRuns();
+  const health = useHealthCheck({ query: { queryKey: getHealthCheckQueryKey(), refetchInterval: 30_000, retry: false } });
 
   useEffect(() => () => { if (floorPlanUrl) URL.revokeObjectURL(floorPlanUrl); }, [floorPlanUrl]);
   const result = run?.result ?? null;
   const visibleAps = useMemo(() => result?.apNodes.filter(ap => ap.floor === floor) ?? [], [result, floor]);
   const recommendations = result?.loadSuggestions ?? [];
+  const balancing = result?.loadBalancing ?? null;
+  // Walls outside a shrunken grid are kept for later but not sent or drawn.
+  const activeWalls = useMemo(() => obstructions.filter(wall => wall.x < config.gridWidth && wall.y < config.gridHeight && wall.floor < config.numFloors), [obstructions, config.gridWidth, config.gridHeight, config.numFloors]);
+  const floorCount = result?.numFloors ?? config.numFloors;
+  const apiStatus = health.isError ? { label: "API offline", tone: "#e77f77" }
+    : !health.data ? { label: "Connecting…", tone: "#8a9894" }
+    : health.data.database === "unavailable" ? { label: "API · DB unavailable", tone: "#e6b46d" }
+    : { label: "API + DB connected", tone: "#70c5a2" };
 
-  const setNumeric = (field: keyof WlanSimulationConfig, value: number) => {
+  const setNumeric = (field: NumericConfigKey, value: number) => {
     setConfig(current => ({ ...current, [field]: field === "congestionThreshold" ? value / 100 : value }));
   };
-  const setValueForField = (field: keyof WlanSimulationConfig, value: number) => setConfig(current => ({ ...current, [field]: value }));
+  const setValueForField = (field: NumericConfigKey, value: number) => setConfig(current => ({ ...current, [field]: value }));
+
+  const paintWall = (x: number, y: number, wall: boolean) => {
+    setObstructions(current => {
+      const rest = current.filter(cell => !(cell.x === x && cell.y === y && cell.floor === floor));
+      return wall ? [...rest, { x, y, floor }] : rest;
+    });
+  };
+
+  const onLayoutFile = async (file?: File) => {
+    if (!file) return;
+    setLayoutError("");
+    try {
+      const layout = parseLayoutJson(await file.text());
+      setConfig(current => ({ ...current, gridWidth: layout.gridWidth, gridHeight: layout.gridHeight, numFloors: layout.numFloors, cellSizeMeters: layout.cellSizeMeters }));
+      setObstructions(layout.obstructions);
+      setFloor(0);
+    } catch (error) {
+      setLayoutError(error instanceof Error ? error.message : "Unable to read this layout file.");
+    }
+  };
+
+  const exportLayout = () => {
+    const layout: VenueLayout = { version: 1, gridWidth: config.gridWidth, gridHeight: config.gridHeight, numFloors: config.numFloors, cellSizeMeters: config.cellSizeMeters, obstructions: activeWalls };
+    const href = URL.createObjectURL(new Blob([JSON.stringify(layout, null, 2)], { type: "application/json" }));
+    const link = document.createElement("a");
+    link.href = href; link.download = "wlan-venue-layout.json"; link.click();
+    URL.revokeObjectURL(href);
+  };
 
   const onCsvChange = async (file?: File) => {
     if (!file) return;
@@ -182,10 +267,13 @@ function App() {
       sourceMode,
       config,
       ...(sourceMode === "telemetry" ? { measurements } : {}),
+      ...(activeWalls.length ? { obstructions: activeWalls } : {}),
     };
     createRun.mutate({ data: payload }, {
       onSuccess: (savedRun) => {
         setRun(savedRun);
+        setEditingWalls(false);
+        setTab("map");
         setFloor(0);
         setFormError("");
         void queryClient.invalidateQueries({ queryKey: getListSimulationRunsQueryKey() });
@@ -225,7 +313,7 @@ function App() {
           <p className="mt-0.5 hidden text-[10px] text-[#82908e] sm:block">Venue modelling · anonymous telemetry analysis</p></div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <div className="hidden items-center gap-2 rounded-md border border-[#2b393d] bg-[#192328] px-2.5 py-1.5 text-[10px] text-[#9db1a9] sm:flex"><span className="h-1.5 w-1.5 rounded-full bg-[#70c5a2]" /> LOCAL MODEL</div>
+        <div className="hidden items-center gap-2 rounded-md border border-[#2b393d] bg-[#192328] px-2.5 py-1.5 text-[10px] uppercase text-[#9db1a9] sm:flex" data-testid="status-backend" title="Python engine runs behind the API; runs are stored in PostgreSQL"><span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: apiStatus.tone }} /> {apiStatus.label}</div>
         <button type="button" onClick={runAnalysis} disabled={createRun.isPending} data-testid="button-run-analysis" className="inline-flex items-center gap-2 rounded-md bg-[#6ac5a5] px-3.5 py-2 text-xs font-extrabold text-[#10211c] transition hover:bg-[#83d4b6] disabled:cursor-wait disabled:opacity-60">
           {createRun.isPending ? <Activity size={14} className="animate-pulse" /> : <Play size={13} fill="currentColor" />}<span>{createRun.isPending ? "Analysing…" : "Run analysis"}</span>
         </button>
@@ -256,21 +344,41 @@ function App() {
           <section>
             <div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2"><Layers3 size={14} className="text-[#75c7a7]" /><h2 className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#aab7b2]">Venue parameters</h2></div><span className="font-mono text-[9px] text-[#6f807d]">02 / 02</span></div>
             <div className="grid grid-cols-2 gap-x-3 gap-y-3.5">
-              {CONFIG_FIELDS.slice(0, 6).map(field => <label key={field.key} className="min-w-0" data-testid={`control-${field.key}`}>
-                <span className="mb-1 flex min-h-7 items-end justify-between gap-1 text-[9px] font-semibold leading-tight text-[#9ba9a5]"><span>{field.label}</span><span className="shrink-0 font-mono text-[9px] text-[#d5e0da]">{config[field.key]}{field.key === "congestionThreshold" ? "%" : field.unit ?? ""}</span></span>
-                <input type="range" min={field.min} max={field.max} step={field.step} value={field.key === "congestionThreshold" ? config.congestionThreshold * 100 : config[field.key]} onChange={event => setNumeric(field.key, Number(event.target.value))} data-testid={`input-${field.key}`} aria-label={field.label} className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#354347] accent-[#6ac5a5]" />
+              {CONFIG_FIELDS.filter(field => field.group === "venue").map(field => <label key={field.key} className="min-w-0" data-testid={`control-${field.key}`}>
+                <span className="mb-1 flex min-h-7 items-end justify-between gap-1 text-[9px] font-semibold leading-tight text-[#9ba9a5]"><span>{field.label}</span><span className="shrink-0 font-mono text-[9px] text-[#d5e0da]">{field.key === "kmeansClusters" && config.kmeansClusters === 0 ? "auto" : config[field.key]}{field.unit ?? ""}</span></span>
+                <input type="range" min={field.min} max={field.max} step={field.step} value={config[field.key]} onChange={event => setNumeric(field.key, Number(event.target.value))} data-testid={`input-${field.key}`} aria-label={field.label} className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#354347] accent-[#6ac5a5]" />
               </label>)}
             </div>
+            {sourceMode === "simulation" && <div className="mt-3">
+              <div className="mb-1 text-[9px] font-semibold text-[#9ba9a5]">User placement</div>
+              <div className="grid grid-cols-2 gap-1 rounded-lg border border-[#2c393d] bg-[#11191d] p-1">
+                {(["uniform", "hotspots"] as const).map(mode => <button key={mode} type="button" onClick={() => setConfig(current => ({ ...current, userDistribution: mode }))} data-testid={`button-distribution-${mode}`} className={`rounded-md px-2 py-1.5 text-[10px] font-bold transition ${config.userDistribution === mode ? "bg-[#29433d] text-[#a4e0c5] shadow-sm" : "text-[#83918e] hover:text-[#d0dbd5]"}`}>{mode === "uniform" ? "Uniform" : "Crowd hotspots"}</button>)}
+              </div>
+            </div>}
+            <p className="mt-2 text-[9px] leading-relaxed text-[#768582]">K-means "auto" picks the cluster count with the best silhouette score.</p>
+          </section>
+          <section className="border-t border-[#29373b] pt-4" data-testid="section-venue-layout">
+            <div className="mb-2 flex items-center justify-between"><div className="flex items-center gap-2"><BrickWall size={13} className="text-[#c9a27f]" /><h2 className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#aab7b2]">Venue layout</h2></div><span className="font-mono text-[9px] text-[#8f9d99]" data-testid="text-wall-count">{activeWalls.length} wall cells</span></div>
+            <p className="mb-2 text-[9px] leading-relaxed text-[#7c8a86]">Trace walls over a floor-plan image, or import a layout digitised from the institution's drawings. Each wall crossed costs the wall-loss setting in signal.</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button type="button" onClick={() => { setEditingWalls(value => !value); setTab("map"); }} data-testid="button-edit-walls" className={`inline-flex items-center justify-center gap-1.5 rounded-md border px-2 py-1.5 text-[10px] font-bold ${editingWalls ? "border-[#c9a27f] bg-[#3a2f26] text-[#efd2b6]" : "border-[#303f43] bg-[#192328] text-[#9caeaa] hover:border-[#52766b]"}`}><Pencil size={11} /> {editingWalls ? "Done drawing" : "Draw walls"}</button>
+              <label className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-[#303f43] bg-[#192328] px-2 py-1.5 text-[10px] font-bold text-[#9caeaa] hover:border-[#52766b]"><Upload size={11} /> Import JSON
+                <input type="file" accept=".json,application/json" className="sr-only" data-testid="input-layout-json" onChange={event => { void onLayoutFile(event.target.files?.[0]); event.target.value = ""; }} />
+              </label>
+              <button type="button" onClick={exportLayout} data-testid="button-export-layout" className="inline-flex items-center justify-center gap-1.5 rounded-md border border-[#303f43] bg-[#192328] px-2 py-1.5 text-[10px] font-bold text-[#9caeaa] hover:border-[#52766b]"><ArrowDownToLine size={11} /> Export JSON</button>
+              <button type="button" onClick={() => setObstructions([])} disabled={!obstructions.length} data-testid="button-clear-walls" className="inline-flex items-center justify-center gap-1.5 rounded-md border border-[#303f43] bg-[#192328] px-2 py-1.5 text-[10px] font-bold text-[#de988e] hover:border-[#7a514b] disabled:opacity-40"><Eraser size={11} /> Clear walls</button>
+            </div>
+            {layoutError && <p role="alert" data-testid="text-layout-error" className="mt-2 text-[10px] leading-relaxed text-[#f09b91]">{layoutError}</p>}
           </section>
           <details className="group rounded-lg border border-[#2a393d] bg-[#172126]">
             <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2.5 text-[10px] font-bold text-[#aab8b2]"><span className="flex items-center gap-2"><Signal size={13} className="text-[#80b8a7]" /> Radio model tuning</span><ChevronDown size={13} className="text-[#72817e] transition group-open:rotate-180" /></summary>
             <div className="grid grid-cols-2 gap-x-3 gap-y-3 border-t border-[#2b393d] px-3 py-3">
-              {CONFIG_FIELDS.slice(6).map(field => <label key={field.key} className="min-w-0" data-testid={`control-${field.key}`}>
-                <span className="mb-1 flex min-h-7 items-end justify-between gap-1 text-[9px] font-semibold leading-tight text-[#9ba9a5]"><span>{field.label}</span><span className="shrink-0 font-mono text-[9px] text-[#d5e0da]">{config[field.key]}{field.unit ?? ""}</span></span>
-                <input type="range" min={field.min} max={field.max} step={field.step} value={config[field.key]} onChange={event => setValueForField(field.key, Number(event.target.value))} data-testid={`input-${field.key}`} aria-label={field.label} className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#354347] accent-[#6ac5a5]" />
+              {CONFIG_FIELDS.filter(field => field.group === "radio").map(field => <label key={field.key} className="min-w-0" data-testid={`control-${field.key}`}>
+                <span className="mb-1 flex min-h-7 items-end justify-between gap-1 text-[9px] font-semibold leading-tight text-[#9ba9a5]"><span>{field.label}</span><span className="shrink-0 font-mono text-[9px] text-[#d5e0da]">{field.key === "congestionThreshold" ? Math.round(config.congestionThreshold * 100) : config[field.key]}{field.unit ?? ""}</span></span>
+                <input type="range" min={field.min} max={field.max} step={field.step} value={field.key === "congestionThreshold" ? config.congestionThreshold * 100 : config[field.key]} onChange={event => field.key === "congestionThreshold" ? setNumeric(field.key, Number(event.target.value)) : setValueForField(field.key, Number(event.target.value))} data-testid={`input-${field.key}`} aria-label={field.label} className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#354347] accent-[#6ac5a5]" />
               </label>)}
             </div>
-            <div className="px-3 pb-3 text-[9px] leading-relaxed text-[#768582]">Path-loss parameters calibrate the simulated link budget. Imported measurements are analysed as supplied.</div>
+            <div className="px-3 pb-3 text-[9px] leading-relaxed text-[#768582]">Path-loss parameters calibrate the simulated link budget. Shadow fading is seeded log-normal; channels are assigned by colouring the AP interference graph, and SINR counts co-channel APs. Imported RSSI is analysed as supplied.</div>
           </details>
           <section className="border-t border-[#29373b] pt-4">
             <div className="mb-2 flex items-center gap-2"><FileImage size={13} className="text-[#7bb7a5]" /><h2 className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#aab7b2]">Floor-plan reference</h2></div>
@@ -296,13 +404,15 @@ function App() {
           {run && <button type="button" data-testid="button-reset-view" onClick={() => { setRun(null); setFormError(""); }} className="inline-flex items-center gap-1.5 rounded-md border border-[#354348] px-2.5 py-1.5 text-[10px] font-bold text-[#9caaa6] hover:bg-[#1b272b]"><RotateCcw size={12} /> New analysis</button>}
         </div>
 
-        {metrics ? <section data-testid="section-analysis-metrics" className="mb-4 grid grid-cols-2 gap-y-3 rounded-lg border border-[#2c393d] bg-[#172126] p-4 sm:grid-cols-3 lg:grid-cols-6 rise-in delay-1">
+        {metrics ? <section data-testid="section-analysis-metrics" className="mb-4 grid grid-cols-2 gap-y-4 rounded-lg border border-[#2c393d] bg-[#172126] p-4 sm:grid-cols-4 rise-in delay-1">
           <Metric label="Coverage" value={`${formatMetric(metrics.coveragePercent)}%`} detail={`${metrics.userCount} measured users`} accent testId="metric-coverage" />
           <Metric label="Average RSSI" value={`${formatMetric(metrics.avgRssiDbm)} dBm`} detail={`Minimum ${formatMetric(metrics.minRssiDbm)} dBm`} testId="metric-average-rssi" />
+          <Metric label="Average SINR" value={`${formatMetric(metrics.avgSinrDb)} dB`} detail={`Minimum ${formatMetric(metrics.minSinrDb)} dB · ${metrics.coChannelConflicts} channel clashes`} testId="metric-average-sinr" />
           <Metric label="Bandwidth / user" value={`${formatMetric(metrics.avgBandwidthPerUserMbps)} Mbps`} detail="Mean assigned capacity" testId="metric-bandwidth-user" />
           <Metric label="Congested APs" value={String(metrics.congestedApCount)} detail={`of ${metrics.apCount} access points`} testId="metric-congested-aps" />
-          <Metric label="Load variation" value={formatMetric(metrics.loadCoefficientOfVariation, 2)} detail="Coefficient of variation" testId="metric-load-cv" />
-          <Metric label="K-means clusters" value={String(metrics.clusterCount)} detail="Across venue floors" testId="metric-cluster-count" />
+          <Metric label="Load variation" value={formatMetric(metrics.loadCoefficientOfVariation, 2)} detail={balancing?.movedUsers ? `${formatMetric(balancing.after.loadCoefficientOfVariation, 2)} after simulated rebalancing` : "Coefficient of variation"} testId="metric-load-cv" />
+          <Metric label="K-means clusters" value={String(metrics.clusterCount)} detail={metrics.silhouetteScore === null ? "Across venue floors" : `Silhouette ${formatMetric(metrics.silhouetteScore, 2)}`} testId="metric-cluster-count" />
+          <Metric label="Wall cells" value={String(metrics.obstructionCount)} detail="Obstructions in the radio model" testId="metric-obstructions" />
         </section> : null}
 
         <section className="overflow-hidden rounded-lg border border-[#2c393d] bg-[#151e22] rise-in delay-2">
@@ -311,26 +421,37 @@ function App() {
               {([["map", "Venue map"], ["aps", "AP details"], ["clusters", "User clusters"], ["recommendations", "Recommendations"]] as Array<[ViewTab, string]>).map(([id, label]) => <button type="button" key={id} onClick={() => setTab(id)} data-testid={`tab-${id}`} className={`rounded px-2.5 py-1.5 text-[10px] font-bold transition ${tab === id ? "bg-[#294039] text-[#a3dfc2]" : "text-[#84928e] hover:text-[#d5dfd9]"}`}>{label}</button>)}
             </div>
             <div className="flex items-center gap-2">
-              {result && <label className="flex items-center gap-1.5 text-[10px] text-[#879591]">Floor <select value={floor} onChange={event => setFloor(Number(event.target.value))} data-testid="select-floor" className="rounded border border-[#344247] bg-[#192328] px-2 py-1 font-mono text-[10px] text-[#d2ded7]">{Array.from({ length: result.numFloors }, (_, index) => <option key={index} value={index}>{index + 1}</option>)}</select></label>}
+              {(result || editingWalls) && <label className="flex items-center gap-1.5 text-[10px] text-[#879591]">Floor <select value={floor} onChange={event => setFloor(Number(event.target.value))} data-testid="select-floor" className="rounded border border-[#344247] bg-[#192328] px-2 py-1 font-mono text-[10px] text-[#d2ded7]">{Array.from({ length: floorCount }, (_, index) => <option key={index} value={index}>{index + 1}</option>)}</select></label>}
               {run && <span className="hidden items-center gap-1 font-mono text-[9px] text-[#71807c] sm:flex"><Wifi size={12} /> {result?.edgeCount ?? 0} graph edges</span>}
             </div>
           </div>
-          {!result ? <div className="flex min-h-[390px] flex-col items-center justify-center px-5 py-12 text-center" data-testid="empty-analysis">
+          {editingWalls ? <div className="relative h-[390px] min-h-[320px] md:h-[490px]" data-testid="panel-wall-editor"><RunCanvas result={result} config={config} floor={floor} floorPlanUrl={floorPlanUrl} obstructions={obstructions} editable onPaintCell={paintWall} />
+            <div className="absolute left-3 top-3 max-w-[260px] rounded-md border border-[#5a4a3c] bg-[#1f1a16]/90 px-2.5 py-2 text-[9px] leading-relaxed text-[#e3cdb7] backdrop-blur">Click or drag across cells to add walls; start on a wall to erase. Floor {floor + 1} of {floorCount}. Run the analysis when the layout is done.</div>
+          </div> : !result ? <div className="flex min-h-[390px] flex-col items-center justify-center px-5 py-12 text-center" data-testid="empty-analysis">
             {createRun.isPending ? <><div className="mb-4 h-8 w-8 animate-pulse rounded-full border border-[#477366] bg-[#274039]" /><p className="text-sm font-bold text-[#dbe5de]">Calculating venue model</p><p className="mt-1 text-[10px] text-[#81908c]">The saved analysis will appear here shortly.</p></> : <><div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#345047] bg-[#1c312b] text-[#83cdb0]"><MapPinned size={21} /></div><p className="text-sm font-bold text-[#dce5df]">Ready when you are</p><p className="mt-1 max-w-sm text-[10px] leading-relaxed text-[#83918e]">Set a venue profile or import non-identifying survey points. Run analysis to view coverage, clustering and access-point load.</p><button type="button" onClick={runAnalysis} disabled={createRun.isPending} data-testid="button-start-analysis" className="mt-4 rounded-md bg-[#6ac5a5] px-4 py-2 text-[10px] font-extrabold text-[#10211c] hover:bg-[#83d4b6] disabled:opacity-50">Run analysis</button></>}
           </div> : <>
-            {tab === "map" && <div className="relative h-[390px] min-h-[320px] md:h-[490px]" data-testid="panel-venue-map"><RunCanvas result={result} config={run?.config ?? config} floor={floor} floorPlanUrl={floorPlanUrl} />
+            {tab === "map" && <div className="relative h-[390px] min-h-[320px] md:h-[490px]" data-testid="panel-venue-map"><RunCanvas result={result} config={run?.config ?? config} floor={floor} floorPlanUrl={floorPlanUrl} obstructions={activeWalls} />
               <div className="absolute left-3 top-3 rounded-md border border-[#364348]/90 bg-[#131d21]/90 px-2.5 py-2 backdrop-blur"><div className="mb-1 text-[8px] font-bold uppercase tracking-[.15em] text-[#82918d]">Floor {floor + 1} / {result.numFloors}</div><div className="flex flex-wrap gap-x-3 gap-y-1 text-[9px] text-[#aab8b3]"><span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#7dd2b1]" /> User point</span><span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full border border-[#76c9a5]" /> Access point</span><span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#e6b46d]" /> Cluster density</span></div></div>
               {floorPlanName && <div className="absolute bottom-3 left-3 rounded bg-[#141e22]/90 px-2 py-1 text-[9px] text-[#b1c0ba]" data-testid="status-floor-plan-overlay">Reference overlay · manually aligned</div>}
             </div>}
             {tab === "aps" && <div className="max-h-[490px] min-h-[320px] overflow-auto p-3 md:p-4" data-testid="panel-ap-details"><div className="mb-3 flex items-center justify-between"><h3 className="text-xs font-extrabold text-[#dce5df]">Access-point inventory</h3><span className="font-mono text-[9px] text-[#80908b]">{visibleAps.length} on floor {floor + 1}</span></div>
-              <div className="overflow-x-auto"><table className="w-full min-w-[650px] text-left text-[10px]"><thead><tr className="border-b border-[#2c393d] text-[9px] uppercase tracking-wider text-[#768681]">{["AP", "Position", "Users", "Mean RSSI", "Mbps / user", "Density", "Health"].map(label => <th key={label} className="pb-2 pr-4 font-bold">{label}</th>)}</tr></thead><tbody>{visibleAps.map(ap => <tr key={ap.id} data-testid={`row-ap-${ap.id}`} className="border-b border-[#283438] text-[#c5d0ca] hover:bg-[#1a262a]"><td className="py-2.5 pr-4 font-mono font-bold text-[#a9dec4]">{ap.id}</td><td className="py-2.5 pr-4 font-mono">({ap.x}, {ap.y})</td><td className="py-2.5 pr-4">{ap.userCount}</td><td className="py-2.5 pr-4 font-mono">{formatMetric(ap.avgRssiDbm)} dBm</td><td className="py-2.5 pr-4 font-mono">{formatMetric(ap.bandwidthPerUserMbps)} Mbps</td><td className="py-2.5 pr-4"><span className="rounded px-1.5 py-1 text-[8px] font-extrabold" style={{ color: classColor[ap.densityClass], backgroundColor: `${classColor[ap.densityClass]}1e` }}>{ap.densityClass}</span></td><td className={`py-2.5 pr-4 font-bold ${ap.congested ? "text-[#e99186]" : "text-[#7fc7a6]"}`}>{ap.congested ? "Congested" : "Within target"}</td></tr>)}</tbody></table>{visibleAps.length === 0 && <p className="py-10 text-center text-xs text-[#899792]">No access points on this floor.</p>}</div>
+              <div className="overflow-x-auto"><table className="w-full min-w-[650px] text-left text-[10px]"><thead><tr className="border-b border-[#2c393d] text-[9px] uppercase tracking-wider text-[#768681]">{["AP", "Position", "Channel", "Users", "After balancing", "Mean RSSI", "Mbps / user", "Density", "Health"].map(label => <th key={label} className="pb-2 pr-4 font-bold">{label}</th>)}</tr></thead><tbody>{visibleAps.map(ap => <tr key={ap.id} data-testid={`row-ap-${ap.id}`} className="border-b border-[#283438] text-[#c5d0ca] hover:bg-[#1a262a]"><td className="py-2.5 pr-4 font-mono font-bold text-[#a9dec4]">{ap.id}</td><td className="py-2.5 pr-4 font-mono">({ap.x}, {ap.y})</td><td className="py-2.5 pr-4 font-mono">{ap.channel}</td><td className="py-2.5 pr-4">{ap.userCount}</td><td className="py-2.5 pr-4">{balancing?.apUserCountsAfter[ap.id] ?? ap.userCount}</td><td className="py-2.5 pr-4 font-mono">{formatMetric(ap.avgRssiDbm)} dBm</td><td className="py-2.5 pr-4 font-mono">{formatMetric(ap.bandwidthPerUserMbps)} Mbps</td><td className="py-2.5 pr-4"><span className="rounded px-1.5 py-1 text-[8px] font-extrabold" style={{ color: classColor[ap.densityClass], backgroundColor: `${classColor[ap.densityClass]}1e` }}>{ap.densityClass}</span></td><td className={`py-2.5 pr-4 font-bold ${ap.congested ? "text-[#e99186]" : "text-[#7fc7a6]"}`}>{ap.congested ? "Congested" : "Within target"}</td></tr>)}</tbody></table>{visibleAps.length === 0 && <p className="py-10 text-center text-xs text-[#899792]">No access points on this floor.</p>}</div>
             </div>}
-            {tab === "clusters" && <div className="max-h-[490px] min-h-[320px] overflow-auto p-3 md:p-4" data-testid="panel-user-clusters"><div className="mb-3"><h3 className="text-xs font-extrabold text-[#dce5df]">K-means user clusters</h3><p className="mt-1 text-[10px] text-[#84928e]">Spatial groupings of anonymous user points. Density classes reflect relative cluster population.</p></div>
-              {result.clusters.length ? <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">{result.clusters.filter(cluster => cluster.floor === floor).map(cluster => <article key={cluster.id} data-testid={`card-cluster-${cluster.id}`} className="rounded-lg border border-[#2b393d] bg-[#182327] p-3"><div className="flex items-start justify-between"><div><div className="font-mono text-[10px] font-bold text-[#a9d9c3]">Cluster {cluster.id}</div><div className="mt-1 text-[9px] text-[#83918c]">Center ({formatMetric(cluster.centerX, 1)}, {formatMetric(cluster.centerY, 1)})</div></div><span className="rounded px-1.5 py-1 text-[8px] font-extrabold" style={{ color: classColor[cluster.densityClass], backgroundColor: `${classColor[cluster.densityClass]}1e` }}>{cluster.densityClass} DENSITY</span></div><div className="mt-3 flex items-end justify-between border-t border-[#2a383c] pt-2"><span className="text-[9px] uppercase tracking-wider text-[#75847f]">User points</span><span className="font-mono text-sm text-[#e1e9e3]">{cluster.userCount}</span></div></article>)}</div> : <p className="py-10 text-center text-xs text-[#899792]">No cluster data was returned.</p>}
+            {tab === "clusters" && <div className="max-h-[490px] min-h-[320px] overflow-auto p-3 md:p-4" data-testid="panel-user-clusters"><div className="mb-3"><h3 className="text-xs font-extrabold text-[#dce5df]">K-means user clusters</h3><p className="mt-1 text-[10px] text-[#84928e]">Spatial groupings of anonymous user points. Density classes compare each cluster's users per area with the venue average (below 0.7× low, 1.6× and above high).</p></div>
+              {result.clusters.length ? <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">{result.clusters.filter(cluster => cluster.floor === floor).map(cluster => <article key={cluster.id} data-testid={`card-cluster-${cluster.id}`} className="rounded-lg border border-[#2b393d] bg-[#182327] p-3"><div className="flex items-start justify-between"><div><div className="font-mono text-[10px] font-bold text-[#a9d9c3]">Cluster {cluster.id}</div><div className="mt-1 text-[9px] text-[#83918c]">Center ({formatMetric(cluster.centerX, 1)}, {formatMetric(cluster.centerY, 1)})</div></div><span className="rounded px-1.5 py-1 text-[8px] font-extrabold" style={{ color: classColor[cluster.densityClass], backgroundColor: `${classColor[cluster.densityClass]}1e` }}>{cluster.densityClass} DENSITY</span></div><div className="mt-3 flex items-end justify-between border-t border-[#2a383c] pt-2"><span className="text-[9px] uppercase tracking-wider text-[#75847f]">User points</span><span className="font-mono text-sm text-[#e1e9e3]">{cluster.userCount}</span></div><div className="mt-1.5 flex items-end justify-between text-[9px] text-[#8a9894]"><span>Radius {formatMetric(cluster.radiusMeters)} m</span><span className="font-mono">{formatMetric(cluster.usersPer100Sqm, 2)} users / 100 m²</span></div></article>)}</div> : <p className="py-10 text-center text-xs text-[#899792]">No cluster data was returned.</p>}
             </div>}
             {tab === "recommendations" && <div className="max-h-[490px] min-h-[320px] overflow-auto p-4 md:p-5" data-testid="panel-recommendations"><div className="mb-4 flex items-start gap-3"><div className="rounded-lg border border-[#574c38] bg-[#352f23] p-2 text-[#dfbd7f]"><AlertTriangle size={15} /></div><div><h3 className="text-xs font-extrabold text-[#e0e7e0]">Planning recommendations</h3><p className="mt-1 text-[10px] leading-relaxed text-[#8b9892]">Review these as planning options only. Nothing here changes live WLAN configuration.</p></div></div>
               <div className="space-y-2">{recommendations.length ? recommendations.map((suggestion, index) => <div key={`${index}-${suggestion}`} data-testid={`recommendation-${index}`} className="flex gap-3 rounded-lg border border-[#343c39] bg-[#1a2426] p-3"><span className="font-mono text-[10px] text-[#d5b774]">{String(index + 1).padStart(2, "0")}</span><p className="text-[11px] leading-relaxed text-[#c6d0ca]">{suggestion}</p></div>) : <div className="rounded-lg border border-[#2c393d] p-4 text-[11px] text-[#899792]">No recommendations were returned for this run.</div>}</div>
-              <div className="mt-4 rounded-md border border-[#335347] bg-[#1a2d27] px-3 py-2.5 text-[10px] text-[#a4c8b7]">Suggestions are advisory. No client reassociation or access-point modification controls are provided.</div>
+              {balancing && <div className="mt-5" data-testid="panel-load-balancing">
+                <h4 className="text-[11px] font-extrabold text-[#e0e7e0]">Simulated load balancing</h4>
+                <p className="mt-1 text-[10px] leading-relaxed text-[#8b9892]">Users on APs above {balancing.loadLimitUsers} users were re-associated in the model to the nearby AP with the smallest signal loss that still meets the minimum RSSI.</p>
+                <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[420px] text-left text-[10px]"><thead><tr className="border-b border-[#2c393d] text-[9px] uppercase tracking-wider text-[#768681]">{["", "Load variation", "Congested APs", "Busiest AP"].map(label => <th key={label} className="pb-2 pr-4 font-bold">{label}</th>)}</tr></thead><tbody>
+                  {([["Before", balancing.before], ["After", balancing.after]] as const).map(([label, snapshot]) => <tr key={label} data-testid={`row-balance-${label.toLowerCase()}`} className="border-b border-[#283438] text-[#c5d0ca]"><td className="py-2 pr-4 font-bold">{label}</td><td className="py-2 pr-4 font-mono">{formatMetric(snapshot.loadCoefficientOfVariation, 2)}</td><td className="py-2 pr-4">{snapshot.congestedApCount}</td><td className="py-2 pr-4">{snapshot.maxApUsers} users</td></tr>)}
+                </tbody></table></div>
+                {balancing.reassignments.length > 0 ? <div className="mt-3 space-y-1">{balancing.reassignments.slice(0, 12).map((move, index) => <div key={index} className="flex flex-wrap justify-between gap-2 rounded border border-[#2b393d] bg-[#182327] px-2.5 py-1.5 font-mono text-[9px] text-[#b9c6c0]"><span>({move.x}, {move.y}) F{move.floor + 1}: {move.fromApId} → {move.toApId}</span><span>{formatMetric(move.rssiBeforeDbm)} → {formatMetric(move.rssiAfterDbm)} dBm</span></div>)}{balancing.movedUsers > 12 && <p className="text-[9px] text-[#7f8e89]">…and {balancing.movedUsers - 12} more moves.</p>}</div>
+                  : <p className="mt-3 text-[10px] text-[#899792]">No user needed to move.</p>}
+              </div>}
+              <div className="mt-4 rounded-md border border-[#335347] bg-[#1a2d27] px-3 py-2.5 text-[10px] text-[#a4c8b7]">Rebalancing is applied to the model only. No live client reassociation or access-point configuration is changed.</div>
             </div>}
           </>}
         </section>
